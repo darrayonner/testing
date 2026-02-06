@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Blueprint – Engineering for the SDGs</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0b2b44, #cfd9df);
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+h1, h2 { color: #e6f2ff; }
+.card {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid silver;
+  border-radius: 14px;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 800px;
+}
+button {
+  background: #1e90ff;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 5px;
+}
+button:hover {
+  background: silver;
+  color: #0b2b44;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  border: 1px solid silver;
+  padding: 8px;
+}
+.timer { font-size: 22px; color: #ffd700; }
+.correct { color: #7CFC00; }
+.wrong { color: #ff6961; }
+select, input {
+  padding: 6px;
+  border-radius: 6px;
+  margin: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>BLUEPRINT</h1>
+
+<!-- LEADERBOARD -->
+<div class="card">
+<h2>Leaderboard</h2>
+<table>
+<tr>
+  <th>Player</th>
+  <th>SDG Tokens</th>
+  <th>Sustainability Points</th>
+</tr>
+<tbody id="leaderboard"></tbody>
+</table>
+</div>
+
+<!-- MANUAL ADJUSTER -->
+<div class="card">
+<h2>Points Tracker</h2>
+
+<select id="adjustPlayer">
+  <option value="0">Player 1</option>
+  <option value="1">Player 2</option>
+  <option value="2">Player 3</option>
+  <option value="3">Player 4</option>
+</select>
+
+<select id="adjustType">
+  <option value="tokens">SDG Tokens</option>
+  <option value="points">Sustainability Points</option>
+</select>
+
+<input type="number" id="adjustAmount" value="1" style="width:70px">
+<button onclick="adjustScore()">Apply</button>
+</div>
+
+<!-- QUESTIONS -->
+<div class="card">
+<h2>Question Phase</h2>
+
+<select id="questionType">
+  <option value="advancement">Advancement (+2 Tokens)</option>
+  <option value="iq">SDG IQ (+1 Point)</option>
+  <option value="opportunity">Opportunity Card (+2 Tokens)</option>
+</select>
+
+<select id="playerSelect">
+  <option value="0">Player 1</option>
+  <option value="1">Player 2</option>
+  <option value="2">Player 3</option>
+  <option value="3">Player 4</option>
+</select>
+
+<br><br>
+<button onclick="nextQuestion()">Get Question</button>
+
+<p class="timer" id="timer"></p>
+<h3 id="question"></h3>
+<div id="choices"></div>
+<p id="feedback"></p>
+</div>
+
+<script>
+/* PLAYERS */
+const players = [
+  { name: "Player 1", tokens: 0, points: 0 },
+  { name: "Player 2", tokens: 0, points: 0 },
+  { name: "Player 3", tokens: 0, points: 0 },
+  { name: "Player 4", tokens: 0, points: 0 }
+];
+
+/* QUESTIONS */
+const questions = {
+  advancement: [
+    { q: "How do engineers support clean water access?", c: ["Design water systems", "Sell bottled water", "Ignore sanitation"], a: 0 },
+    { q: "Which SDG focuses on industry and innovation?", c: ["SDG 6", "SDG 9", "SDG 13"], a: 1 }
+  ],
+  iq: [
+    { q: "How many SDGs exist?", c: ["15", "17", "20"], a: 1 }
+  ],
+  opportunity: [
+    { q: "A solar farm reduces emissions. What is the key benefit?", c: ["Cleaner energy", "Higher pollution", "Less electricity"], a: 0 }
+  ]
+};
+
+let used = { advancement: [], iq: [], opportunity: [] };
+let currentQ = null;
+let timerInterval;
+let timeLeft = 20;
+
+/* RENDER */
+function renderBoard() {
+  const board = document.getElementById("leaderboard");
+  board.innerHTML = "";
+  players.forEach(p => {
+    board.innerHTML += `
+      <tr>
+        <td>${p.name}</td>
+        <td>${p.tokens}</td>
+        <td>${p.points}</td>
+      </tr>`;
+  });
+}
+
+/* MANUAL ADJUST */
+function adjustScore() {
+  const p = document.getElementById("adjustPlayer").value;
+  const type = document.getElementById("adjustType").value;
+  const amount = parseInt(document.getElementById("adjustAmount").value);
+  if (isNaN(amount)) return;
+
+  if (type === "tokens") {
+    players[p].tokens += amount;
+    if (players[p].tokens < 0) players[p].tokens = 0;
+  } else {
+    players[p].points += amount;
+  }
+  renderBoard();
+}
+
+/* TIMER */
+function startTimer() {
+  clearInterval(timerInterval);
+  timeLeft = 20;
+  document.getElementById("timer").innerText = `⏱ ${timeLeft}s`;
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById("timer").innerText = `⏱ ${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      reveal(false);
+    }
+  }, 1000);
+}
+
+/* QUESTIONS */
+function nextQuestion() {
+  document.getElementById("feedback").innerText = "";
+  document.getElementById("choices").innerHTML = "";
+
+  const type = document.getElementById("questionType").value;
+  const pool = questions[type];
+  const unused = pool.filter(q => !used[type].includes(q));
+
+  currentQ = unused.length
+    ? unused[Math.floor(Math.random() * unused.length)]
+    : { ...pool[Math.floor(Math.random() * pool.length)],
+        q: "Rephrased: " + pool[0].q };
+
+  used[type].push(currentQ);
+
+  document.getElementById("question").innerText = currentQ.q;
+  currentQ.c.forEach((choice, i) => {
+    document.getElementById("choices").innerHTML +=
+      `<button onclick="answer(${i})">${choice}</button>`;
+  });
+
+  startTimer();
+}
+
+function answer(i) {
+  clearInterval(timerInterval);
+  reveal(i === currentQ.a);
+}
+
+function reveal(correct) {
+  const p = document.getElementById("playerSelect").value;
+  const type = document.getElementById("questionType").value;
+
+  if (correct) {
+    if (type === "iq") players[p].points += 1;
+    else players[p].tokens += 2;
+  }
+
+  if (players[p].tokens < 0) players[p].tokens = 0;
+
+  document.getElementById("feedback").innerText =
+    (correct ? "✅ Correct! Please get an Innovation Card" : "❌ Incorrect. Please get a Crisis Card. ") +
+    "Correct answer: " + currentQ.c[currentQ.a];
+
+  renderBoard();
+}
+
+/* INIT */
+renderBoard();
+</script>
+
+</body>
+</html>
