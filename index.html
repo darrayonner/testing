@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Blueprint – Engineering for the SDGs</title>
+<title>Blueprint</title>
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #0b2b44, #cfd9df);
+  font-family: Arial, Spartan;
+  background: linear-gradient(160deg, #012158, #000000);
   color: #fff;
   text-align: center;
   padding: 20px;
 }
-h1, h2 { color: #e6f2ff; }
+h1, h2 { color: #FFFFFF; }
 .card {
   background: rgba(255,255,255,0.12);
   border: 1px solid silver;
@@ -21,7 +21,7 @@ h1, h2 { color: #e6f2ff; }
   max-width: 800px;
 }
 button {
-  background: #1e90ff;
+  background: #FFFFFF12;
   color: white;
   border: none;
   padding: 10px 18px;
@@ -54,7 +54,8 @@ select, input {
 
 <body>
 
-<h1>BLUEPRINT</h1>
+<img src="blueprint_logo.png"
+width="300" height:"300"><br>
 
 <!-- LEADERBOARD -->
 <div class="card">
@@ -91,7 +92,7 @@ select, input {
 
 <!-- QUESTIONS -->
 <div class="card">
-<h2>Question Phase</h2>
+<h2>Select Question</h2>
 
 <select id="questionType">
   <option value="advancement">Advancement (+2 Tokens)</option>
@@ -200,7 +201,7 @@ function nextQuestion() {
   currentQ = unused.length
     ? unused[Math.floor(Math.random() * unused.length)]
     : { ...pool[Math.floor(Math.random() * pool.length)],
-        q: "Rephrased: " + pool[0].q };
+        q: "Question: " + pool[0].q };
 
   used[type].push(currentQ);
 
@@ -230,7 +231,7 @@ function reveal(correct) {
   if (players[p].tokens < 0) players[p].tokens = 0;
 
   document.getElementById("feedback").innerText =
-    (correct ? "✅ Correct! Please get an Innovation Card" : "❌ Incorrect. Please get a Crisis Card. ") +
+    (correct ? "✅ Correct! Please get an Innovation Card " : "❌ Incorrect. Please get a Crisis Card. ") +
     "Correct answer: " + currentQ.c[currentQ.a];
 
   renderBoard();
