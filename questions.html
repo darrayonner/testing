@@ -1,0 +1,3396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Questions Menu</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-start justify-center pt-14 bg-[#012158] text-white">
+
+	<div class="text-center max-w-xl px-6 mx-auto">
+
+		
+		<img src="assets/bp.png" alt="Game Logo" class="mx-auto mb-0 w-60 sm:w-80" />
+
+		
+		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 justify-items-center mt-2">
+
+			<button id="advancementBtn" class="w-full px-6 py-3 rounded-xl border border-blue-300/40 
+				bg-white/10 backdrop-blur-md 
+				hover:bg-white/20 hover:border-blue-300
+				transition-all duration-300 font-semibold tracking-wide">
+				Advancement
+			</button>
+
+				<button id="sdgIQBtn" class="w-full px-6 py-3 rounded-xl border border-blue-300/40 
+				bg-white/10 backdrop-blur-md 
+				hover:bg-white/20 hover:border-blue-300
+				transition-all duration-300 font-semibold tracking-wide">
+				SDG IQ
+			</button>
+
+			<button id="opportunityBtn" class="w-full px-6 py-3 rounded-xl border border-blue-300/40 
+				bg-white/10 backdrop-blur-md 
+				hover:bg-white/20 hover:border-blue-300
+				transition-all duration-300 font-semibold tracking-wide">
+				Opportunity cards
+			</button>
+
+			<button id="charadesBtn" class="w-full px-6 py-3 rounded-xl border border-green-400/60 
+				bg-white/10 backdrop-blur-md text-green-300
+				hover:bg-green-500/20 hover:border-green-400
+				transition-all duration-300 font-semibold tracking-wide">
+				Charades (Green Gestures)
+			</button>
+
+		</div>
+
+		
+		<div class="mt-4">
+			<a href="index.html" class="text-sm text-blue-200 hover:underline">Return to homepage</a>
+		</div>
+	</div>
+
+	
+	<div id="playerModal" class="fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50">
+		<div class="bg-[#012158] border border-blue-300/30 rounded-xl p-6 w-11/12 max-w-md text-center">
+			<h2 class="text-xl font-semibold mb-4">Which player will answer?</h2>
+			<div class="grid grid-cols-2 gap-3 mb-4">
+				<button class="player-select px-4 py-3 rounded-lg bg-white/10 hover:bg-white/20" data-player="1">Player 1</button>
+				<button class="player-select px-4 py-3 rounded-lg bg-white/10 hover:bg-white/20" data-player="2">Player 2</button>
+				<button class="player-select px-4 py-3 rounded-lg bg-white/10 hover:bg-white/20" data-player="3">Player 3</button>
+				<button class="player-select px-4 py-3 rounded-lg bg-white/10 hover:bg-white/20" data-player="4">Player 4</button>
+			</div>
+			<button id="playerCancel" class="text-sm text-blue-200 hover:underline">Cancel</button>
+		</div>
+	</div>
+</div>
+
+	<script>
+		
+		const modal = document.getElementById('playerModal');
+		const advBtn = document.getElementById('advancementBtn');
+		const sdgBtn = document.getElementById('sdgIQBtn');
+		const oppBtn = document.getElementById('opportunityBtn');
+		const charadesBtn = document.getElementById('charadesBtn');
+		const cancelBtn = document.getElementById('playerCancel');
+		const playerButtons = document.querySelectorAll('.player-select');
+
+		
+
+		
+		let advancementPool = [];
+		let opportunityPool = [];
+		let currentCategory = 'advancement';
+
+		
+		let sdgIQActive = false;
+		let sdgIQIndex = 0;
+		let currentSDGPlayer;
+		let sdgIQQuestions = [];
+
+		
+		let charadesActive = false;
+		const charadesWords = [
+			"Reduce", "Reuse", "Recycle", "Conserve", "Restore", "Electrify", 
+			"Harvest", "Store", "Balance", "Turn off lights", "Save water", 
+			"Use a bike", "Plant a tree", "Pick up trash", "Use reusable bag", 
+			"Segregate waste", "Refill bottle", "Avoid plastic"
+		];
+
+		
+		let fallbackQuestions = [
+			{q: 'What is 2 + 2?', choices: ['3','4','5','6'], answer: 1, difficulty:1},
+			{q: 'Which planet is known as the Red Planet?', choices: ['Earth','Venus','Mars','Jupiter'], answer: 2, difficulty:1},
+			{q: 'What is the capital of France?', choices: ['Paris','Rome','Madrid','Berlin'], answer: 0, difficulty:1}
+		];
+
+		
+		sdgIQQuestions = [
+			{q: 'Which statement most accurately explains why engineering is essential for achieving the SDGs?',
+choices: [
+'Engineers mainly provide technical solutions without social impact',
+'Engineering integrates technology with social, economic, and environmental considerations',
+'Engineering focuses primarily on industrial growth',
+'Engineers work independently of global development frameworks'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'An engineering project that prioritizes long-term environmental benefits over short-term economic gains best reflects:',
+choices: [
+'Technological determinism',
+'Sustainable engineering principles',
+'Market-driven innovation',
+'Regulatory compliance'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which scenario best demonstrates engineering’s contribution to SDG 6 (Clean Water and Sanitation)?',
+choices: [
+'Increasing water tariffs to reduce consumption',
+'Designing decentralized water purification systems for rural communities',
+'Promoting bottled water consumption',
+'Expanding urban real estate development'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Why is interdisciplinary collaboration important in engineering solutions for SDGs?',
+choices: [
+'Engineering problems are purely technical',
+'SDG challenges involve complex social, environmental, and economic systems',
+'Collaboration reduces engineering accuracy',
+'Engineers cannot work independently'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which engineering decision most clearly reflects responsible innovation?',
+choices: [
+'Choosing cheaper materials regardless of environmental impact',
+'Designing infrastructure that accounts for climate resilience and community needs',
+'Maximizing production speed',
+'Prioritizing aesthetic design over functionality'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering contributions to SDG 7 (Clean Energy) are most effective when they:',
+choices: [
+'Focus solely on technological performance',
+'Align with local socio-economic conditions and energy needs',
+'Replace traditional energy systems immediately',
+'Ignore policy and regulatory frameworks'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which statement best explains the relationship between engineering and economic development?',
+choices: [
+'Engineering primarily replaces human labor',
+'Engineering enables innovation, productivity, and infrastructure growth',
+'Engineering limits market competition',
+'Engineering operates independently of economic systems'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'A smart city initiative that integrates digital infrastructure, sustainable transport, and citizen participation best supports:',
+choices: [
+'Technological modernization only',
+'SDG 11 (Sustainable Cities and Communities)',
+'Industrial competitiveness',
+'Urban aesthetics'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which engineering practice most strongly supports SDG 12 (Responsible Consumption and Production)?',
+choices: [
+'Increasing manufacturing output',
+'Designing products based on circular economy principles',
+'Reducing labor costs',
+'Accelerating product replacement cycles'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Why is stakeholder engagement important in engineering projects related to SDGs?',
+choices: [
+'It simplifies technical design',
+'It ensures solutions reflect social needs and values',
+'It reduces engineering standards',
+'It replaces scientific analysis'
+],
+answer: 1,
+difficulty: 1},
+{q: 'Which example best illustrates engineering’s role in climate action (SDG 13)?',
+choices: [
+'Developing entertainment platforms',
+'Designing low-carbon infrastructure and adaptation technologies',
+'Expanding tourism industries',
+'Promoting consumerism'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering ethics in sustainable development primarily requires engineers to:',
+choices: [
+'Prioritize technological advancement over safety',
+'Consider long-term societal and environmental impacts',
+'Follow market trends',
+'Avoid interdisciplinary collaboration'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which factor most influences the success of engineering solutions for SDGs in developing regions?',
+choices: [
+'Advanced technology alone',
+'Alignment with local context and capacity',
+'Global standardization',
+'Commercial profitability'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering contributes to SDG 3 (Good Health and Well-being) mainly by:',
+choices: [
+'Designing healthcare infrastructure and medical technologies',
+'Increasing pharmaceutical advertising',
+'Expanding insurance markets',
+'Reducing healthcare workforce'
+],
+answer: 0,
+difficulty: 1},
+
+{q: 'Which statement best reflects systems thinking in sustainable engineering?',
+choices: [
+'Solving problems in isolation',
+'Evaluating interactions among technical, social, and environmental components',
+'Prioritizing technical efficiency only',
+'Ignoring long-term consequences'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering solutions for disaster resilience are most effective when they:',
+choices: [
+'Focus only on post-disaster recovery',
+'Combine prevention, preparedness, and resilient design',
+'Rely solely on government intervention',
+'Prioritize economic efficiency over safety'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which engineering action most directly supports SDG 2 (Zero Hunger)?',
+choices: [
+'Designing irrigation systems and agricultural technologies',
+'Expanding urban infrastructure',
+'Developing financial software',
+'Promoting industrial automation'
+],
+answer: 0,
+difficulty: 1},
+
+{q: 'Why is diversity in engineering important for sustainable development?',
+choices: [
+'It increases competition among engineers',
+'It brings varied perspectives to complex global challenges',
+'It reduces technical standards',
+'It simplifies engineering problems'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which scenario best demonstrates the social dimension of sustainable engineering?',
+choices: [
+'Optimizing production speed',
+'Designing infrastructure accessible to marginalized communities',
+'Maximizing corporate profits',
+'Automating industrial processes'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering contributions to digital inclusion are most evident in:',
+choices: [
+'Development of ICT infrastructure and affordable connectivity',
+'Expansion of luxury technology markets',
+'Automation of industrial processes',
+'Reduction of data availability'
+],
+answer: 0,
+difficulty: 1},
+
+{q: 'Which condition most enhances the impact of engineering on SDGs?',
+choices: [
+'Isolated technological innovation',
+'Strong partnerships among government, industry, and academia',
+'Competition between sectors',
+'Reduction of public investment'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering approaches to resource management are sustainable when they:',
+choices: [
+'Maximize resource extraction',
+'Improve efficiency while preserving ecological limits',
+'Prioritize short-term economic gains',
+'Ignore environmental constraints'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which statement best captures the transformative potential of engineering for SDGs?',
+choices: [
+'Engineering mainly improves existing technologies',
+'Engineering can reshape social, economic, and environmental systems',
+'Engineering has limited societal influence',
+'Engineering focuses only on industrial sectors'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering education aligned with SDGs should emphasize:',
+choices: [
+'Technical specialization only',
+'Sustainability, ethics, and interdisciplinary skills',
+'Memorization of formulas',
+'Industrial productivity alone'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which engineering decision best reflects environmental sustainability?',
+choices: [
+'Using non-renewable materials for cost reduction',
+'Designing infrastructure with lifecycle environmental assessment',
+'Increasing energy consumption',
+'Prioritizing speed of construction'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering solutions are most likely to fail in achieving SDGs when they:',
+choices: [
+'Are technically advanced',
+'Ignore local social and cultural contexts',
+'Are interdisciplinary',
+'Are supported by policy frameworks'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which statement best explains the link between engineering and social equity?',
+choices: [
+'Engineering naturally benefits all social groups equally',
+'Engineering can reduce inequalities when designed inclusively',
+'Engineering is unrelated to social justice',
+'Engineering focuses only on technological progress'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering contributions to environmental monitoring are most evident in:',
+choices: [
+'Development of sensor networks and data analytics',
+'Expansion of entertainment industries',
+'Reduction of scientific research',
+'Promotion of consumer culture'
+],
+answer: 0,
+difficulty: 1},
+
+{q: 'Which decision-making approach best reflects sustainable engineering practice?',
+choices: [
+'Prioritizing immediate technical performance',
+'Balancing environmental, social, and economic impacts',
+'Ignoring long-term consequences',
+'Avoiding ethical considerations'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which statement most accurately summarizes the role of engineering in achieving the SDGs?',
+choices: [
+'Engineering plays a supportive but limited role',
+'Engineering is a central enabler of systemic sustainable development',
+'Engineering focuses only on infrastructure',
+'Engineering operates independently of global goals'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'A city plans to reduce flooding using green infrastructure instead of concrete drains. Which SDG-oriented engineering principle is applied?',
+choices: [
+'Cost minimization',
+'Nature-based solutions',
+'Industrial optimization',
+'Technological acceleration'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design solar-powered irrigation systems for remote farms. This primarily supports:',
+choices: [
+'SDG 2 and SDG 7',
+'SDG 4 and SDG 16',
+'SDG 8 and SDG 10',
+'SDG 14 and SDG 15'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A transport project prioritizes public transit over private vehicles. What sustainability outcome is most directly targeted?',
+choices: [
+'Increased economic competition',
+'Reduced carbon emissions and social equity',
+'Faster industrial production',
+'Higher real estate value'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers consult local communities before designing a water system. This practice reflects:',
+choices: [
+'Technical compliance',
+'Participatory engineering',
+'Market-driven design',
+'Standardization'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A company redesigns packaging to reduce waste and improve recyclability. Which SDG concept is applied?',
+choices: [
+'Linear production',
+'Circular economy',
+'Industrial expansion',
+'Market segmentation'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers choose slightly more expensive materials because they last longer and reduce maintenance. This decision reflects:',
+choices: [
+'Profit maximization',
+'Lifecycle thinking',
+'Market competition',
+'Risk avoidance'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A smart city project integrates sensors, data analytics, and citizen feedback. What is its primary sustainability value?',
+choices: [
+'Technological complexity',
+'Systemic urban optimization',
+'Economic privatization',
+'Political influence'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design low-cost housing using local materials. This primarily addresses:',
+choices: [
+'SDG 9 only',
+'SDG 11 and SDG 10',
+'SDG 14',
+'SDG 17'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A renewable energy project fails because it ignores local economic conditions. This highlights the importance of:',
+choices: [
+'Technical sophistication',
+'Context-sensitive engineering',
+'Global standardization',
+'Industrial automation'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers develop flood-resistant infrastructure in coastal areas. This mainly supports:',
+choices: [
+'Disaster resilience',
+'Industrial growth',
+'Market competitiveness',
+'Cultural preservation'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A university updates its engineering curriculum to include sustainability and ethics. This change aims to:',
+choices: [
+'Reduce technical training',
+'Align engineering education with SDGs',
+'Increase specialization',
+'Limit interdisciplinary learning'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design mobile health clinics for rural populations. This supports:',
+choices: [
+'SDG 3',
+'SDG 12',
+'SDG 15',
+'SDG 17'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A project reduces energy consumption but increases social inequality. Which sustainability dimension is neglected?',
+choices: [
+'Environmental',
+'Social',
+'Technical',
+'Economic'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design digital platforms to improve access to education. This contributes to:',
+choices: [
+'SDG 4',
+'SDG 14',
+'SDG 15',
+'SDG 16'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A project integrates environmental, social, and economic goals. This reflects:',
+choices: [
+'Triple-bottom-line thinking',
+'Market efficiency',
+'Technical optimization',
+'Political alignment'
+],
+answer: 0,
+difficulty: 2},
+{q: 'Engineers design a public transportation system that prioritizes accessibility for elderly and disabled people. Which sustainability principle is most strongly reflected?',
+choices: [
+'Technical efficiency',
+'Social inclusion',
+'Market competitiveness',
+'Industrial productivity'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A rural electrification project uses locally manufactured components instead of imported ones. This decision primarily strengthens:',
+choices: [
+'Technological dependence',
+'Local capacity and resilience',
+'Global standardization',
+'Market monopolization'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers redesign a manufacturing process to reduce water use while maintaining productivity. Which SDG-related objective is addressed?',
+choices: [
+'Cultural preservation',
+'Resource efficiency',
+'Political stability',
+'Market expansion'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A smart agriculture system uses sensors and data analytics to optimize irrigation. The primary sustainability benefit is:',
+choices: [
+'Increased technological complexity',
+'Improved resource management and productivity',
+'Higher operational costs',
+'Reduced farmer participation'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A city invests in flood-control infrastructure but neglects community awareness programs. Which sustainability dimension is underemphasized?',
+choices: [
+'Technical',
+'Social',
+'Economic',
+'Environmental'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design modular housing that can be expanded as families grow. This approach reflects:',
+choices: [
+'Rigid design principles',
+'Adaptive and flexible engineering',
+'Industrial automation',
+'Cost minimization'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A company invests in energy-efficient machinery despite higher upfront costs. Which sustainability perspective best explains this decision?',
+choices: [
+'Short-term profitability',
+'Long-term environmental and economic benefits',
+'Regulatory avoidance',
+'Brand competition'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers collaborate with social scientists when designing urban renewal projects. This collaboration primarily aims to:',
+choices: [
+'Reduce technical workload',
+'Address complex social impacts',
+'Increase project duration',
+'Limit engineering autonomy'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A water supply system is designed to function even during power outages. Which sustainability concept does this illustrate?',
+choices: [
+'Redundancy and resilience',
+'Market efficiency',
+'Technological dependence',
+'Standardization'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'Engineers introduce low-cost digital tools to improve access to government services in remote areas. This initiative primarily supports:',
+choices: [
+'Digital inclusion',
+'Industrial automation',
+'Market liberalization',
+'Cultural homogenization'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A renewable energy project prioritizes large-scale facilities but neglects small communities. Which SDG principle is compromised?',
+choices: [
+'Technological advancement',
+'Equity and inclusiveness',
+'Economic efficiency',
+'Industrial competitiveness'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design waste management systems that encourage recycling and community participation. The main sustainability outcome is:',
+choices: [
+'Increased waste production',
+'Behavioral change toward sustainable practices',
+'Higher operational costs',
+'Reduced technological innovation'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A coastal engineering project protects ecosystems while supporting local fisheries. This reflects:',
+choices: [
+'Environmental–economic integration',
+'Industrial expansion',
+'Technological isolation',
+'Market dominance'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'Engineers evaluate multiple design options using environmental, social, and economic criteria. This method represents:',
+choices: [
+'Technical optimization',
+'Multi-criteria decision-making',
+'Market forecasting',
+'Regulatory compliance'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A national engineering policy prioritizes innovation, inclusiveness, and sustainability simultaneously. This policy best reflects:',
+choices: [
+'Single-sector development',
+'Integrated sustainable development strategy',
+'Market-driven growth',
+'Technical specialization'
+],
+answer: 1,
+difficulty: 2},
+{q: 'A national infrastructure plan prioritizes high-tech megaprojects but neglects rural basic services. From an SDG perspective, the most critical limitation is:',
+choices: [
+'Technical inefficiency',
+'Misalignment with inclusive development',
+'Insufficient innovation',
+'Regulatory complexity'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering strategy best resolves the tension between economic growth and environmental sustainability?',
+choices: [
+'Maximizing industrial output',
+'Integrating eco-design with economic feasibility',
+'Reducing technological investment',
+'Prioritizing short-term market gains'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'If an engineering solution improves efficiency but increases dependency on imported technology, its sustainability is limited mainly in terms of:',
+choices: [
+'Environmental impact',
+'Technological sovereignty and resilience',
+'Social participation',
+'Ethical responsibility'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which scenario best illustrates systems-level engineering thinking?',
+choices: [
+'Optimizing a single machine’s performance',
+'Designing integrated energy, transport, and urban systems',
+'Reducing production costs',
+'Automating manufacturing processes'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A technology-driven solution fails because communities reject it culturally. This failure primarily reflects:',
+choices: [
+'Technical inadequacy',
+'Neglect of socio-cultural dimensions',
+'Insufficient funding',
+'Regulatory barriers'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering decision most effectively advances multiple SDGs simultaneously?',
+choices: [
+'Building automated factories',
+'Developing decentralized renewable energy for underserved communities',
+'Expanding luxury infrastructure',
+'Increasing industrial exports'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'When engineers prioritize stakeholder consultation over technical optimization, they implicitly emphasize:',
+choices: [
+'Technical rationality',
+'Democratic legitimacy and social sustainability',
+'Market efficiency',
+'Professional autonomy'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which statement best captures the transformative role of engineering in SDGs?',
+choices: [
+'Engineering mainly improves existing technologies',
+'Engineering reshapes socio-technical systems and development pathways',
+'Engineering operates independently of policy frameworks',
+'Engineering focuses only on infrastructure'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A sustainability assessment that ignores long-term environmental impacts is fundamentally flawed because it neglects:',
+choices: [
+'Market competitiveness',
+'Intergenerational equity',
+'Technical feasibility',
+'Organizational efficiency'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering approach most effectively addresses complex SDG challenges?',
+choices: [
+'Linear problem-solving',
+'Adaptive and iterative design',
+'Standardized technical solutions',
+'Centralized decision-making'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering solution significantly improves efficiency but reduces local employment. From an SDG perspective, the most appropriate evaluation is that the solution:',
+choices: [
+'Is fully sustainable because efficiency is prioritized',
+'Requires assessment of social trade-offs alongside technical gains',
+'Is unacceptable because technology should never replace labor',
+'Is sustainable if it increases national productivity'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A country adopts advanced smart-grid technology but lacks skilled personnel to maintain it. The primary sustainability issue is:',
+choices: [
+'Environmental inefficiency',
+'Capacity and institutional readiness',
+'Insufficient technological innovation',
+'Overregulation'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering decision best demonstrates alignment with the SDG principle of “leaving no one behind”?',
+choices: [
+'Investing in high-end urban infrastructure',
+'Expanding digital services only in profitable regions',
+'Designing affordable technologies for marginalized communities',
+'Prioritizing export-oriented industrial development'
+],
+answer: 2,
+difficulty: 3},
+
+{q: 'An engineering team prioritizes rapid deployment of infrastructure over long-term environmental assessment. This approach is most vulnerable to criticism because it neglects:',
+choices: [
+'Market competitiveness',
+'Intergenerational sustainability',
+'Technical innovation',
+'Organizational efficiency'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A multinational company implements uniform engineering standards across diverse regions, resulting in low adoption in some communities. The most plausible explanation is:',
+choices: [
+'Insufficient technological sophistication',
+'Lack of context-sensitive design',
+'Excessive stakeholder participation',
+'Overinvestment in innovation'
+],
+answer: 1,
+difficulty: 3},
+{q: 'Which scenario best illustrates a systems-level approach to sustainable engineering?',
+choices: [
+'Improving the efficiency of a single manufacturing process',
+'Integrating energy, transport, housing, and digital infrastructure in urban planning',
+'Reducing the cost of raw materials',
+'Automating industrial production lines'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering project achieves environmental targets but exacerbates social inequality. From an SDG perspective, the project can be described as:',
+choices: [
+'Technically successful and socially irrelevant',
+'Partially sustainable with critical social limitations',
+'Fully sustainable due to environmental performance',
+'Unsustainable only if economically inefficient'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering strategy most effectively supports long-term resilience in developing regions?',
+choices: [
+'Importing advanced technologies',
+'Building local technical capacity and knowledge systems',
+'Centralizing infrastructure management',
+'Maximizing short-term efficiency'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A government prioritizes megaprojects to boost economic growth but neglects basic services in rural areas. The most significant SDG-related implication is:',
+choices: [
+'Technological stagnation',
+'Increased spatial and social inequality',
+'Reduced industrial competitiveness',
+'Excessive environmental regulation'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering decision best demonstrates ethical responsibility in sustainable development?',
+choices: [
+'Selecting cheaper materials regardless of environmental impact',
+'Incorporating safety, environmental protection, and community well-being into design',
+'Maximizing productivity at all costs',
+'Prioritizing corporate branding'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering innovation reduces carbon emissions but increases dependence on rare minerals. The most appropriate sustainability assessment should focus on:',
+choices: [
+'Short-term environmental gains only',
+'Trade-offs between environmental benefits and resource security',
+'Market competitiveness',
+'Technological novelty'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which statement best captures the role of engineering in achieving multiple SDGs simultaneously?',
+choices: [
+'Engineering addresses each SDG independently',
+'Engineering creates interconnected solutions with cross-sector impacts',
+'Engineering focuses only on infrastructure development',
+'Engineering replaces social and political institutions'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A project uses cutting-edge technology but fails due to lack of community acceptance. The failure primarily reflects:',
+choices: [
+'Technical limitations',
+'Neglect of social legitimacy',
+'Insufficient funding',
+'Regulatory barriers'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering policy would most effectively promote sustainable innovation?',
+choices: [
+'Encouraging isolated technological breakthroughs',
+'Integrating research, education, industry, and social goals',
+'Limiting interdisciplinary collaboration',
+'Prioritizing short-term economic returns'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering solution optimizes efficiency but increases vulnerability to system failures. This outcome highlights the importance of:',
+choices: [
+'Market competition',
+'Resilience and redundancy in system design',
+'Technical specialization',
+'Regulatory compliance'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which statement best reflects the concept of intergenerational equity in engineering?',
+choices: [
+'Prioritizing current economic growth',
+'Designing systems that meet present needs without compromising future generations',
+'Maximizing technological innovation',
+'Reducing social participation'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering project is technically sound but financially unsustainable. From an SDG perspective, the project’s main limitation is:',
+choices: [
+'Technical feasibility',
+'Economic viability',
+'Social legitimacy',
+'Environmental performance'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering approach best addresses complex, uncertain sustainability challenges?',
+choices: [
+'Fixed design standards',
+'Adaptive, learning-oriented design processes',
+'Strict central planning',
+'Single-discipline optimization'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A national development strategy integrates engineering with social policy and environmental governance. This integration most clearly reflects:',
+choices: [
+'Technical determinism',
+'Holistic sustainable development',
+'Industrial specialization',
+'Market liberalization'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which statement most accurately captures the deepest contribution of engineering to sustainable development?',
+choices: [
+'Engineering provides technical tools for economic growth',
+'Engineering shapes socio-technical systems that influence development pathways',
+'Engineering operates independently of societal values',
+'Engineering primarily increases industrial productivity'
+],
+answer: 1,
+difficulty: 3}
+		];
+
+		// Advancement card questions: 12 questions (4 easy difficulty=1, 4 medium difficulty=2, 4 hard difficulty=3)
+		const advancementQuestions = [
+			{q: 'Which statement most accurately explains why engineering is essential for achieving the SDGs?',
+choices: [
+'Engineers mainly provide technical solutions without social impact',
+'Engineering integrates technology with social, economic, and environmental considerations',
+'Engineering focuses primarily on industrial growth',
+'Engineers work independently of global development frameworks'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'An engineering project that prioritizes long-term environmental benefits over short-term economic gains best reflects:',
+choices: [
+'Technological determinism',
+'Sustainable engineering principles',
+'Market-driven innovation',
+'Regulatory compliance'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which scenario best demonstrates engineering’s contribution to SDG 6 (Clean Water and Sanitation)?',
+choices: [
+'Increasing water tariffs to reduce consumption',
+'Designing decentralized water purification systems for rural communities',
+'Promoting bottled water consumption',
+'Expanding urban real estate development'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Why is interdisciplinary collaboration important in engineering solutions for SDGs?',
+choices: [
+'Engineering problems are purely technical',
+'SDG challenges involve complex social, environmental, and economic systems',
+'Collaboration reduces engineering accuracy',
+'Engineers cannot work independently'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which engineering decision most clearly reflects responsible innovation?',
+choices: [
+'Choosing cheaper materials regardless of environmental impact',
+'Designing infrastructure that accounts for climate resilience and community needs',
+'Maximizing production speed',
+'Prioritizing aesthetic design over functionality'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering contributions to SDG 7 (Clean Energy) are most effective when they:',
+choices: [
+'Focus solely on technological performance',
+'Align with local socio-economic conditions and energy needs',
+'Replace traditional energy systems immediately',
+'Ignore policy and regulatory frameworks'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which statement best explains the relationship between engineering and economic development?',
+choices: [
+'Engineering primarily replaces human labor',
+'Engineering enables innovation, productivity, and infrastructure growth',
+'Engineering limits market competition',
+'Engineering operates independently of economic systems'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'A smart city initiative that integrates digital infrastructure, sustainable transport, and citizen participation best supports:',
+choices: [
+'Technological modernization only',
+'SDG 11 (Sustainable Cities and Communities)',
+'Industrial competitiveness',
+'Urban aesthetics'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which engineering practice most strongly supports SDG 12 (Responsible Consumption and Production)?',
+choices: [
+'Increasing manufacturing output',
+'Designing products based on circular economy principles',
+'Reducing labor costs',
+'Accelerating product replacement cycles'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Why is stakeholder engagement important in engineering projects related to SDGs?',
+choices: [
+'It simplifies technical design',
+'It ensures solutions reflect social needs and values',
+'It reduces engineering standards',
+'It replaces scientific analysis'
+],
+answer: 1,
+difficulty: 1},
+{q: 'Which example best illustrates engineering’s role in climate action (SDG 13)?',
+choices: [
+'Developing entertainment platforms',
+'Designing low-carbon infrastructure and adaptation technologies',
+'Expanding tourism industries',
+'Promoting consumerism'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering ethics in sustainable development primarily requires engineers to:',
+choices: [
+'Prioritize technological advancement over safety',
+'Consider long-term societal and environmental impacts',
+'Follow market trends',
+'Avoid interdisciplinary collaboration'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which factor most influences the success of engineering solutions for SDGs in developing regions?',
+choices: [
+'Advanced technology alone',
+'Alignment with local context and capacity',
+'Global standardization',
+'Commercial profitability'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering contributes to SDG 3 (Good Health and Well-being) mainly by:',
+choices: [
+'Designing healthcare infrastructure and medical technologies',
+'Increasing pharmaceutical advertising',
+'Expanding insurance markets',
+'Reducing healthcare workforce'
+],
+answer: 0,
+difficulty: 1},
+
+{q: 'Which statement best reflects systems thinking in sustainable engineering?',
+choices: [
+'Solving problems in isolation',
+'Evaluating interactions among technical, social, and environmental components',
+'Prioritizing technical efficiency only',
+'Ignoring long-term consequences'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering solutions for disaster resilience are most effective when they:',
+choices: [
+'Focus only on post-disaster recovery',
+'Combine prevention, preparedness, and resilient design',
+'Rely solely on government intervention',
+'Prioritize economic efficiency over safety'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which engineering action most directly supports SDG 2 (Zero Hunger)?',
+choices: [
+'Designing irrigation systems and agricultural technologies',
+'Expanding urban infrastructure',
+'Developing financial software',
+'Promoting industrial automation'
+],
+answer: 0,
+difficulty: 1},
+
+{q: 'Why is diversity in engineering important for sustainable development?',
+choices: [
+'It increases competition among engineers',
+'It brings varied perspectives to complex global challenges',
+'It reduces technical standards',
+'It simplifies engineering problems'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which scenario best demonstrates the social dimension of sustainable engineering?',
+choices: [
+'Optimizing production speed',
+'Designing infrastructure accessible to marginalized communities',
+'Maximizing corporate profits',
+'Automating industrial processes'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering contributions to digital inclusion are most evident in:',
+choices: [
+'Development of ICT infrastructure and affordable connectivity',
+'Expansion of luxury technology markets',
+'Automation of industrial processes',
+'Reduction of data availability'
+],
+answer: 0,
+difficulty: 1},
+
+{q: 'Which condition most enhances the impact of engineering on SDGs?',
+choices: [
+'Isolated technological innovation',
+'Strong partnerships among government, industry, and academia',
+'Competition between sectors',
+'Reduction of public investment'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering approaches to resource management are sustainable when they:',
+choices: [
+'Maximize resource extraction',
+'Improve efficiency while preserving ecological limits',
+'Prioritize short-term economic gains',
+'Ignore environmental constraints'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which statement best captures the transformative potential of engineering for SDGs?',
+choices: [
+'Engineering mainly improves existing technologies',
+'Engineering can reshape social, economic, and environmental systems',
+'Engineering has limited societal influence',
+'Engineering focuses only on industrial sectors'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering education aligned with SDGs should emphasize:',
+choices: [
+'Technical specialization only',
+'Sustainability, ethics, and interdisciplinary skills',
+'Memorization of formulas',
+'Industrial productivity alone'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which engineering decision best reflects environmental sustainability?',
+choices: [
+'Using non-renewable materials for cost reduction',
+'Designing infrastructure with lifecycle environmental assessment',
+'Increasing energy consumption',
+'Prioritizing speed of construction'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering solutions are most likely to fail in achieving SDGs when they:',
+choices: [
+'Are technically advanced',
+'Ignore local social and cultural contexts',
+'Are interdisciplinary',
+'Are supported by policy frameworks'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which statement best explains the link between engineering and social equity?',
+choices: [
+'Engineering naturally benefits all social groups equally',
+'Engineering can reduce inequalities when designed inclusively',
+'Engineering is unrelated to social justice',
+'Engineering focuses only on technological progress'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering contributions to environmental monitoring are most evident in:',
+choices: [
+'Development of sensor networks and data analytics',
+'Expansion of entertainment industries',
+'Reduction of scientific research',
+'Promotion of consumer culture'
+],
+answer: 0,
+difficulty: 1},
+
+{q: 'Which decision-making approach best reflects sustainable engineering practice?',
+choices: [
+'Prioritizing immediate technical performance',
+'Balancing environmental, social, and economic impacts',
+'Ignoring long-term consequences',
+'Avoiding ethical considerations'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which statement most accurately summarizes the role of engineering in achieving the SDGs?',
+choices: [
+'Engineering plays a supportive but limited role',
+'Engineering is a central enabler of systemic sustainable development',
+'Engineering focuses only on infrastructure',
+'Engineering operates independently of global goals'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'A city plans to reduce flooding using green infrastructure instead of concrete drains. Which SDG-oriented engineering principle is applied?',
+choices: [
+'Cost minimization',
+'Nature-based solutions',
+'Industrial optimization',
+'Technological acceleration'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design solar-powered irrigation systems for remote farms. This primarily supports:',
+choices: [
+'SDG 2 and SDG 7',
+'SDG 4 and SDG 16',
+'SDG 8 and SDG 10',
+'SDG 14 and SDG 15'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A transport project prioritizes public transit over private vehicles. What sustainability outcome is most directly targeted?',
+choices: [
+'Increased economic competition',
+'Reduced carbon emissions and social equity',
+'Faster industrial production',
+'Higher real estate value'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers consult local communities before designing a water system. This practice reflects:',
+choices: [
+'Technical compliance',
+'Participatory engineering',
+'Market-driven design',
+'Standardization'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A company redesigns packaging to reduce waste and improve recyclability. Which SDG concept is applied?',
+choices: [
+'Linear production',
+'Circular economy',
+'Industrial expansion',
+'Market segmentation'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers choose slightly more expensive materials because they last longer and reduce maintenance. This decision reflects:',
+choices: [
+'Profit maximization',
+'Lifecycle thinking',
+'Market competition',
+'Risk avoidance'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A smart city project integrates sensors, data analytics, and citizen feedback. What is its primary sustainability value?',
+choices: [
+'Technological complexity',
+'Systemic urban optimization',
+'Economic privatization',
+'Political influence'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design low-cost housing using local materials. This primarily addresses:',
+choices: [
+'SDG 9 only',
+'SDG 11 and SDG 10',
+'SDG 14',
+'SDG 17'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A renewable energy project fails because it ignores local economic conditions. This highlights the importance of:',
+choices: [
+'Technical sophistication',
+'Context-sensitive engineering',
+'Global standardization',
+'Industrial automation'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers develop flood-resistant infrastructure in coastal areas. This mainly supports:',
+choices: [
+'Disaster resilience',
+'Industrial growth',
+'Market competitiveness',
+'Cultural preservation'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A university updates its engineering curriculum to include sustainability and ethics. This change aims to:',
+choices: [
+'Reduce technical training',
+'Align engineering education with SDGs',
+'Increase specialization',
+'Limit interdisciplinary learning'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design mobile health clinics for rural populations. This supports:',
+choices: [
+'SDG 3',
+'SDG 12',
+'SDG 15',
+'SDG 17'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A project reduces energy consumption but increases social inequality. Which sustainability dimension is neglected?',
+choices: [
+'Environmental',
+'Social',
+'Technical',
+'Economic'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design digital platforms to improve access to education. This contributes to:',
+choices: [
+'SDG 4',
+'SDG 14',
+'SDG 15',
+'SDG 16'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A project integrates environmental, social, and economic goals. This reflects:',
+choices: [
+'Triple-bottom-line thinking',
+'Market efficiency',
+'Technical optimization',
+'Political alignment'
+],
+answer: 0,
+difficulty: 2},
+{q: 'Engineers design a public transportation system that prioritizes accessibility for elderly and disabled people. Which sustainability principle is most strongly reflected?',
+choices: [
+'Technical efficiency',
+'Social inclusion',
+'Market competitiveness',
+'Industrial productivity'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A rural electrification project uses locally manufactured components instead of imported ones. This decision primarily strengthens:',
+choices: [
+'Technological dependence',
+'Local capacity and resilience',
+'Global standardization',
+'Market monopolization'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers redesign a manufacturing process to reduce water use while maintaining productivity. Which SDG-related objective is addressed?',
+choices: [
+'Cultural preservation',
+'Resource efficiency',
+'Political stability',
+'Market expansion'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A smart agriculture system uses sensors and data analytics to optimize irrigation. The primary sustainability benefit is:',
+choices: [
+'Increased technological complexity',
+'Improved resource management and productivity',
+'Higher operational costs',
+'Reduced farmer participation'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A city invests in flood-control infrastructure but neglects community awareness programs. Which sustainability dimension is underemphasized?',
+choices: [
+'Technical',
+'Social',
+'Economic',
+'Environmental'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design modular housing that can be expanded as families grow. This approach reflects:',
+choices: [
+'Rigid design principles',
+'Adaptive and flexible engineering',
+'Industrial automation',
+'Cost minimization'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A company invests in energy-efficient machinery despite higher upfront costs. Which sustainability perspective best explains this decision?',
+choices: [
+'Short-term profitability',
+'Long-term environmental and economic benefits',
+'Regulatory avoidance',
+'Brand competition'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers collaborate with social scientists when designing urban renewal projects. This collaboration primarily aims to:',
+choices: [
+'Reduce technical workload',
+'Address complex social impacts',
+'Increase project duration',
+'Limit engineering autonomy'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A water supply system is designed to function even during power outages. Which sustainability concept does this illustrate?',
+choices: [
+'Redundancy and resilience',
+'Market efficiency',
+'Technological dependence',
+'Standardization'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'Engineers introduce low-cost digital tools to improve access to government services in remote areas. This initiative primarily supports:',
+choices: [
+'Digital inclusion',
+'Industrial automation',
+'Market liberalization',
+'Cultural homogenization'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A renewable energy project prioritizes large-scale facilities but neglects small communities. Which SDG principle is compromised?',
+choices: [
+'Technological advancement',
+'Equity and inclusiveness',
+'Economic efficiency',
+'Industrial competitiveness'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design waste management systems that encourage recycling and community participation. The main sustainability outcome is:',
+choices: [
+'Increased waste production',
+'Behavioral change toward sustainable practices',
+'Higher operational costs',
+'Reduced technological innovation'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A coastal engineering project protects ecosystems while supporting local fisheries. This reflects:',
+choices: [
+'Environmental–economic integration',
+'Industrial expansion',
+'Technological isolation',
+'Market dominance'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'Engineers evaluate multiple design options using environmental, social, and economic criteria. This method represents:',
+choices: [
+'Technical optimization',
+'Multi-criteria decision-making',
+'Market forecasting',
+'Regulatory compliance'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A national engineering policy prioritizes innovation, inclusiveness, and sustainability simultaneously. This policy best reflects:',
+choices: [
+'Single-sector development',
+'Integrated sustainable development strategy',
+'Market-driven growth',
+'Technical specialization'
+],
+answer: 1,
+difficulty: 2},
+{q: 'A national infrastructure plan prioritizes high-tech megaprojects but neglects rural basic services. From an SDG perspective, the most critical limitation is:',
+choices: [
+'Technical inefficiency',
+'Misalignment with inclusive development',
+'Insufficient innovation',
+'Regulatory complexity'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering strategy best resolves the tension between economic growth and environmental sustainability?',
+choices: [
+'Maximizing industrial output',
+'Integrating eco-design with economic feasibility',
+'Reducing technological investment',
+'Prioritizing short-term market gains'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'If an engineering solution improves efficiency but increases dependency on imported technology, its sustainability is limited mainly in terms of:',
+choices: [
+'Environmental impact',
+'Technological sovereignty and resilience',
+'Social participation',
+'Ethical responsibility'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which scenario best illustrates systems-level engineering thinking?',
+choices: [
+'Optimizing a single machine’s performance',
+'Designing integrated energy, transport, and urban systems',
+'Reducing production costs',
+'Automating manufacturing processes'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A technology-driven solution fails because communities reject it culturally. This failure primarily reflects:',
+choices: [
+'Technical inadequacy',
+'Neglect of socio-cultural dimensions',
+'Insufficient funding',
+'Regulatory barriers'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering decision most effectively advances multiple SDGs simultaneously?',
+choices: [
+'Building automated factories',
+'Developing decentralized renewable energy for underserved communities',
+'Expanding luxury infrastructure',
+'Increasing industrial exports'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'When engineers prioritize stakeholder consultation over technical optimization, they implicitly emphasize:',
+choices: [
+'Technical rationality',
+'Democratic legitimacy and social sustainability',
+'Market efficiency',
+'Professional autonomy'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which statement best captures the transformative role of engineering in SDGs?',
+choices: [
+'Engineering mainly improves existing technologies',
+'Engineering reshapes socio-technical systems and development pathways',
+'Engineering operates independently of policy frameworks',
+'Engineering focuses only on infrastructure'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A sustainability assessment that ignores long-term environmental impacts is fundamentally flawed because it neglects:',
+choices: [
+'Market competitiveness',
+'Intergenerational equity',
+'Technical feasibility',
+'Organizational efficiency'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering approach most effectively addresses complex SDG challenges?',
+choices: [
+'Linear problem-solving',
+'Adaptive and iterative design',
+'Standardized technical solutions',
+'Centralized decision-making'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering solution significantly improves efficiency but reduces local employment. From an SDG perspective, the most appropriate evaluation is that the solution:',
+choices: [
+'Is fully sustainable because efficiency is prioritized',
+'Requires assessment of social trade-offs alongside technical gains',
+'Is unacceptable because technology should never replace labor',
+'Is sustainable if it increases national productivity'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A country adopts advanced smart-grid technology but lacks skilled personnel to maintain it. The primary sustainability issue is:',
+choices: [
+'Environmental inefficiency',
+'Capacity and institutional readiness',
+'Insufficient technological innovation',
+'Overregulation'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering decision best demonstrates alignment with the SDG principle of “leaving no one behind”?',
+choices: [
+'Investing in high-end urban infrastructure',
+'Expanding digital services only in profitable regions',
+'Designing affordable technologies for marginalized communities',
+'Prioritizing export-oriented industrial development'
+],
+answer: 2,
+difficulty: 3},
+
+{q: 'An engineering team prioritizes rapid deployment of infrastructure over long-term environmental assessment. This approach is most vulnerable to criticism because it neglects:',
+choices: [
+'Market competitiveness',
+'Intergenerational sustainability',
+'Technical innovation',
+'Organizational efficiency'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A multinational company implements uniform engineering standards across diverse regions, resulting in low adoption in some communities. The most plausible explanation is:',
+choices: [
+'Insufficient technological sophistication',
+'Lack of context-sensitive design',
+'Excessive stakeholder participation',
+'Overinvestment in innovation'
+],
+answer: 1,
+difficulty: 3},
+{q: 'Which scenario best illustrates a systems-level approach to sustainable engineering?',
+choices: [
+'Improving the efficiency of a single manufacturing process',
+'Integrating energy, transport, housing, and digital infrastructure in urban planning',
+'Reducing the cost of raw materials',
+'Automating industrial production lines'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering project achieves environmental targets but exacerbates social inequality. From an SDG perspective, the project can be described as:',
+choices: [
+'Technically successful and socially irrelevant',
+'Partially sustainable with critical social limitations',
+'Fully sustainable due to environmental performance',
+'Unsustainable only if economically inefficient'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering strategy most effectively supports long-term resilience in developing regions?',
+choices: [
+'Importing advanced technologies',
+'Building local technical capacity and knowledge systems',
+'Centralizing infrastructure management',
+'Maximizing short-term efficiency'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A government prioritizes megaprojects to boost economic growth but neglects basic services in rural areas. The most significant SDG-related implication is:',
+choices: [
+'Technological stagnation',
+'Increased spatial and social inequality',
+'Reduced industrial competitiveness',
+'Excessive environmental regulation'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering decision best demonstrates ethical responsibility in sustainable development?',
+choices: [
+'Selecting cheaper materials regardless of environmental impact',
+'Incorporating safety, environmental protection, and community well-being into design',
+'Maximizing productivity at all costs',
+'Prioritizing corporate branding'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering innovation reduces carbon emissions but increases dependence on rare minerals. The most appropriate sustainability assessment should focus on:',
+choices: [
+'Short-term environmental gains only',
+'Trade-offs between environmental benefits and resource security',
+'Market competitiveness',
+'Technological novelty'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which statement best captures the role of engineering in achieving multiple SDGs simultaneously?',
+choices: [
+'Engineering addresses each SDG independently',
+'Engineering creates interconnected solutions with cross-sector impacts',
+'Engineering focuses only on infrastructure development',
+'Engineering replaces social and political institutions'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A project uses cutting-edge technology but fails due to lack of community acceptance. The failure primarily reflects:',
+choices: [
+'Technical limitations',
+'Neglect of social legitimacy',
+'Insufficient funding',
+'Regulatory barriers'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering policy would most effectively promote sustainable innovation?',
+choices: [
+'Encouraging isolated technological breakthroughs',
+'Integrating research, education, industry, and social goals',
+'Limiting interdisciplinary collaboration',
+'Prioritizing short-term economic returns'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering solution optimizes efficiency but increases vulnerability to system failures. This outcome highlights the importance of:',
+choices: [
+'Market competition',
+'Resilience and redundancy in system design',
+'Technical specialization',
+'Regulatory compliance'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which statement best reflects the concept of intergenerational equity in engineering?',
+choices: [
+'Prioritizing current economic growth',
+'Designing systems that meet present needs without compromising future generations',
+'Maximizing technological innovation',
+'Reducing social participation'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering project is technically sound but financially unsustainable. From an SDG perspective, the project’s main limitation is:',
+choices: [
+'Technical feasibility',
+'Economic viability',
+'Social legitimacy',
+'Environmental performance'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering approach best addresses complex, uncertain sustainability challenges?',
+choices: [
+'Fixed design standards',
+'Adaptive, learning-oriented design processes',
+'Strict central planning',
+'Single-discipline optimization'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A national development strategy integrates engineering with social policy and environmental governance. This integration most clearly reflects:',
+choices: [
+'Technical determinism',
+'Holistic sustainable development',
+'Industrial specialization',
+'Market liberalization'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which statement most accurately captures the deepest contribution of engineering to sustainable development?',
+choices: [
+'Engineering provides technical tools for economic growth',
+'Engineering shapes socio-technical systems that influence development pathways',
+'Engineering operates independently of societal values',
+'Engineering primarily increases industrial productivity'
+],
+answer: 1,
+difficulty: 3}
+		];
+
+		
+		const opportunityQuestions = [
+			{q: 'Which statement most accurately explains why engineering is essential for achieving the SDGs?',
+choices: [
+'Engineers mainly provide technical solutions without social impact',
+'Engineering integrates technology with social, economic, and environmental considerations',
+'Engineering focuses primarily on industrial growth',
+'Engineers work independently of global development frameworks'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'An engineering project that prioritizes long-term environmental benefits over short-term economic gains best reflects:',
+choices: [
+'Technological determinism',
+'Sustainable engineering principles',
+'Market-driven innovation',
+'Regulatory compliance'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which scenario best demonstrates engineering’s contribution to SDG 6 (Clean Water and Sanitation)?',
+choices: [
+'Increasing water tariffs to reduce consumption',
+'Designing decentralized water purification systems for rural communities',
+'Promoting bottled water consumption',
+'Expanding urban real estate development'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Why is interdisciplinary collaboration important in engineering solutions for SDGs?',
+choices: [
+'Engineering problems are purely technical',
+'SDG challenges involve complex social, environmental, and economic systems',
+'Collaboration reduces engineering accuracy',
+'Engineers cannot work independently'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which engineering decision most clearly reflects responsible innovation?',
+choices: [
+'Choosing cheaper materials regardless of environmental impact',
+'Designing infrastructure that accounts for climate resilience and community needs',
+'Maximizing production speed',
+'Prioritizing aesthetic design over functionality'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering contributions to SDG 7 (Clean Energy) are most effective when they:',
+choices: [
+'Focus solely on technological performance',
+'Align with local socio-economic conditions and energy needs',
+'Replace traditional energy systems immediately',
+'Ignore policy and regulatory frameworks'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which statement best explains the relationship between engineering and economic development?',
+choices: [
+'Engineering primarily replaces human labor',
+'Engineering enables innovation, productivity, and infrastructure growth',
+'Engineering limits market competition',
+'Engineering operates independently of economic systems'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'A smart city initiative that integrates digital infrastructure, sustainable transport, and citizen participation best supports:',
+choices: [
+'Technological modernization only',
+'SDG 11 (Sustainable Cities and Communities)',
+'Industrial competitiveness',
+'Urban aesthetics'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which engineering practice most strongly supports SDG 12 (Responsible Consumption and Production)?',
+choices: [
+'Increasing manufacturing output',
+'Designing products based on circular economy principles',
+'Reducing labor costs',
+'Accelerating product replacement cycles'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Why is stakeholder engagement important in engineering projects related to SDGs?',
+choices: [
+'It simplifies technical design',
+'It ensures solutions reflect social needs and values',
+'It reduces engineering standards',
+'It replaces scientific analysis'
+],
+answer: 1,
+difficulty: 1},
+{q: 'Which example best illustrates engineering’s role in climate action (SDG 13)?',
+choices: [
+'Developing entertainment platforms',
+'Designing low-carbon infrastructure and adaptation technologies',
+'Expanding tourism industries',
+'Promoting consumerism'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering ethics in sustainable development primarily requires engineers to:',
+choices: [
+'Prioritize technological advancement over safety',
+'Consider long-term societal and environmental impacts',
+'Follow market trends',
+'Avoid interdisciplinary collaboration'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which factor most influences the success of engineering solutions for SDGs in developing regions?',
+choices: [
+'Advanced technology alone',
+'Alignment with local context and capacity',
+'Global standardization',
+'Commercial profitability'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering contributes to SDG 3 (Good Health and Well-being) mainly by:',
+choices: [
+'Designing healthcare infrastructure and medical technologies',
+'Increasing pharmaceutical advertising',
+'Expanding insurance markets',
+'Reducing healthcare workforce'
+],
+answer: 0,
+difficulty: 1},
+
+{q: 'Which statement best reflects systems thinking in sustainable engineering?',
+choices: [
+'Solving problems in isolation',
+'Evaluating interactions among technical, social, and environmental components',
+'Prioritizing technical efficiency only',
+'Ignoring long-term consequences'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering solutions for disaster resilience are most effective when they:',
+choices: [
+'Focus only on post-disaster recovery',
+'Combine prevention, preparedness, and resilient design',
+'Rely solely on government intervention',
+'Prioritize economic efficiency over safety'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which engineering action most directly supports SDG 2 (Zero Hunger)?',
+choices: [
+'Designing irrigation systems and agricultural technologies',
+'Expanding urban infrastructure',
+'Developing financial software',
+'Promoting industrial automation'
+],
+answer: 0,
+difficulty: 1},
+
+{q: 'Why is diversity in engineering important for sustainable development?',
+choices: [
+'It increases competition among engineers',
+'It brings varied perspectives to complex global challenges',
+'It reduces technical standards',
+'It simplifies engineering problems'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which scenario best demonstrates the social dimension of sustainable engineering?',
+choices: [
+'Optimizing production speed',
+'Designing infrastructure accessible to marginalized communities',
+'Maximizing corporate profits',
+'Automating industrial processes'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering contributions to digital inclusion are most evident in:',
+choices: [
+'Development of ICT infrastructure and affordable connectivity',
+'Expansion of luxury technology markets',
+'Automation of industrial processes',
+'Reduction of data availability'
+],
+answer: 0,
+difficulty: 1},
+
+{q: 'Which condition most enhances the impact of engineering on SDGs?',
+choices: [
+'Isolated technological innovation',
+'Strong partnerships among government, industry, and academia',
+'Competition between sectors',
+'Reduction of public investment'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering approaches to resource management are sustainable when they:',
+choices: [
+'Maximize resource extraction',
+'Improve efficiency while preserving ecological limits',
+'Prioritize short-term economic gains',
+'Ignore environmental constraints'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which statement best captures the transformative potential of engineering for SDGs?',
+choices: [
+'Engineering mainly improves existing technologies',
+'Engineering can reshape social, economic, and environmental systems',
+'Engineering has limited societal influence',
+'Engineering focuses only on industrial sectors'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering education aligned with SDGs should emphasize:',
+choices: [
+'Technical specialization only',
+'Sustainability, ethics, and interdisciplinary skills',
+'Memorization of formulas',
+'Industrial productivity alone'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which engineering decision best reflects environmental sustainability?',
+choices: [
+'Using non-renewable materials for cost reduction',
+'Designing infrastructure with lifecycle environmental assessment',
+'Increasing energy consumption',
+'Prioritizing speed of construction'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering solutions are most likely to fail in achieving SDGs when they:',
+choices: [
+'Are technically advanced',
+'Ignore local social and cultural contexts',
+'Are interdisciplinary',
+'Are supported by policy frameworks'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which statement best explains the link between engineering and social equity?',
+choices: [
+'Engineering naturally benefits all social groups equally',
+'Engineering can reduce inequalities when designed inclusively',
+'Engineering is unrelated to social justice',
+'Engineering focuses only on technological progress'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Engineering contributions to environmental monitoring are most evident in:',
+choices: [
+'Development of sensor networks and data analytics',
+'Expansion of entertainment industries',
+'Reduction of scientific research',
+'Promotion of consumer culture'
+],
+answer: 0,
+difficulty: 1},
+
+{q: 'Which decision-making approach best reflects sustainable engineering practice?',
+choices: [
+'Prioritizing immediate technical performance',
+'Balancing environmental, social, and economic impacts',
+'Ignoring long-term consequences',
+'Avoiding ethical considerations'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'Which statement most accurately summarizes the role of engineering in achieving the SDGs?',
+choices: [
+'Engineering plays a supportive but limited role',
+'Engineering is a central enabler of systemic sustainable development',
+'Engineering focuses only on infrastructure',
+'Engineering operates independently of global goals'
+],
+answer: 1,
+difficulty: 1},
+
+{q: 'A city plans to reduce flooding using green infrastructure instead of concrete drains. Which SDG-oriented engineering principle is applied?',
+choices: [
+'Cost minimization',
+'Nature-based solutions',
+'Industrial optimization',
+'Technological acceleration'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design solar-powered irrigation systems for remote farms. This primarily supports:',
+choices: [
+'SDG 2 and SDG 7',
+'SDG 4 and SDG 16',
+'SDG 8 and SDG 10',
+'SDG 14 and SDG 15'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A transport project prioritizes public transit over private vehicles. What sustainability outcome is most directly targeted?',
+choices: [
+'Increased economic competition',
+'Reduced carbon emissions and social equity',
+'Faster industrial production',
+'Higher real estate value'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers consult local communities before designing a water system. This practice reflects:',
+choices: [
+'Technical compliance',
+'Participatory engineering',
+'Market-driven design',
+'Standardization'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A company redesigns packaging to reduce waste and improve recyclability. Which SDG concept is applied?',
+choices: [
+'Linear production',
+'Circular economy',
+'Industrial expansion',
+'Market segmentation'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers choose slightly more expensive materials because they last longer and reduce maintenance. This decision reflects:',
+choices: [
+'Profit maximization',
+'Lifecycle thinking',
+'Market competition',
+'Risk avoidance'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A smart city project integrates sensors, data analytics, and citizen feedback. What is its primary sustainability value?',
+choices: [
+'Technological complexity',
+'Systemic urban optimization',
+'Economic privatization',
+'Political influence'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design low-cost housing using local materials. This primarily addresses:',
+choices: [
+'SDG 9 only',
+'SDG 11 and SDG 10',
+'SDG 14',
+'SDG 17'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A renewable energy project fails because it ignores local economic conditions. This highlights the importance of:',
+choices: [
+'Technical sophistication',
+'Context-sensitive engineering',
+'Global standardization',
+'Industrial automation'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers develop flood-resistant infrastructure in coastal areas. This mainly supports:',
+choices: [
+'Disaster resilience',
+'Industrial growth',
+'Market competitiveness',
+'Cultural preservation'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A university updates its engineering curriculum to include sustainability and ethics. This change aims to:',
+choices: [
+'Reduce technical training',
+'Align engineering education with SDGs',
+'Increase specialization',
+'Limit interdisciplinary learning'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design mobile health clinics for rural populations. This supports:',
+choices: [
+'SDG 3',
+'SDG 12',
+'SDG 15',
+'SDG 17'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A project reduces energy consumption but increases social inequality. Which sustainability dimension is neglected?',
+choices: [
+'Environmental',
+'Social',
+'Technical',
+'Economic'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design digital platforms to improve access to education. This contributes to:',
+choices: [
+'SDG 4',
+'SDG 14',
+'SDG 15',
+'SDG 16'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A project integrates environmental, social, and economic goals. This reflects:',
+choices: [
+'Triple-bottom-line thinking',
+'Market efficiency',
+'Technical optimization',
+'Political alignment'
+],
+answer: 0,
+difficulty: 2},
+{q: 'Engineers design a public transportation system that prioritizes accessibility for elderly and disabled people. Which sustainability principle is most strongly reflected?',
+choices: [
+'Technical efficiency',
+'Social inclusion',
+'Market competitiveness',
+'Industrial productivity'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A rural electrification project uses locally manufactured components instead of imported ones. This decision primarily strengthens:',
+choices: [
+'Technological dependence',
+'Local capacity and resilience',
+'Global standardization',
+'Market monopolization'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers redesign a manufacturing process to reduce water use while maintaining productivity. Which SDG-related objective is addressed?',
+choices: [
+'Cultural preservation',
+'Resource efficiency',
+'Political stability',
+'Market expansion'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A smart agriculture system uses sensors and data analytics to optimize irrigation. The primary sustainability benefit is:',
+choices: [
+'Increased technological complexity',
+'Improved resource management and productivity',
+'Higher operational costs',
+'Reduced farmer participation'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A city invests in flood-control infrastructure but neglects community awareness programs. Which sustainability dimension is underemphasized?',
+choices: [
+'Technical',
+'Social',
+'Economic',
+'Environmental'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design modular housing that can be expanded as families grow. This approach reflects:',
+choices: [
+'Rigid design principles',
+'Adaptive and flexible engineering',
+'Industrial automation',
+'Cost minimization'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A company invests in energy-efficient machinery despite higher upfront costs. Which sustainability perspective best explains this decision?',
+choices: [
+'Short-term profitability',
+'Long-term environmental and economic benefits',
+'Regulatory avoidance',
+'Brand competition'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers collaborate with social scientists when designing urban renewal projects. This collaboration primarily aims to:',
+choices: [
+'Reduce technical workload',
+'Address complex social impacts',
+'Increase project duration',
+'Limit engineering autonomy'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A water supply system is designed to function even during power outages. Which sustainability concept does this illustrate?',
+choices: [
+'Redundancy and resilience',
+'Market efficiency',
+'Technological dependence',
+'Standardization'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'Engineers introduce low-cost digital tools to improve access to government services in remote areas. This initiative primarily supports:',
+choices: [
+'Digital inclusion',
+'Industrial automation',
+'Market liberalization',
+'Cultural homogenization'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'A renewable energy project prioritizes large-scale facilities but neglects small communities. Which SDG principle is compromised?',
+choices: [
+'Technological advancement',
+'Equity and inclusiveness',
+'Economic efficiency',
+'Industrial competitiveness'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'Engineers design waste management systems that encourage recycling and community participation. The main sustainability outcome is:',
+choices: [
+'Increased waste production',
+'Behavioral change toward sustainable practices',
+'Higher operational costs',
+'Reduced technological innovation'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A coastal engineering project protects ecosystems while supporting local fisheries. This reflects:',
+choices: [
+'Environmental–economic integration',
+'Industrial expansion',
+'Technological isolation',
+'Market dominance'
+],
+answer: 0,
+difficulty: 2},
+
+{q: 'Engineers evaluate multiple design options using environmental, social, and economic criteria. This method represents:',
+choices: [
+'Technical optimization',
+'Multi-criteria decision-making',
+'Market forecasting',
+'Regulatory compliance'
+],
+answer: 1,
+difficulty: 2},
+
+{q: 'A national engineering policy prioritizes innovation, inclusiveness, and sustainability simultaneously. This policy best reflects:',
+choices: [
+'Single-sector development',
+'Integrated sustainable development strategy',
+'Market-driven growth',
+'Technical specialization'
+],
+answer: 1,
+difficulty: 2},
+{q: 'A national infrastructure plan prioritizes high-tech megaprojects but neglects rural basic services. From an SDG perspective, the most critical limitation is:',
+choices: [
+'Technical inefficiency',
+'Misalignment with inclusive development',
+'Insufficient innovation',
+'Regulatory complexity'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering strategy best resolves the tension between economic growth and environmental sustainability?',
+choices: [
+'Maximizing industrial output',
+'Integrating eco-design with economic feasibility',
+'Reducing technological investment',
+'Prioritizing short-term market gains'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'If an engineering solution improves efficiency but increases dependency on imported technology, its sustainability is limited mainly in terms of:',
+choices: [
+'Environmental impact',
+'Technological sovereignty and resilience',
+'Social participation',
+'Ethical responsibility'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which scenario best illustrates systems-level engineering thinking?',
+choices: [
+'Optimizing a single machine’s performance',
+'Designing integrated energy, transport, and urban systems',
+'Reducing production costs',
+'Automating manufacturing processes'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A technology-driven solution fails because communities reject it culturally. This failure primarily reflects:',
+choices: [
+'Technical inadequacy',
+'Neglect of socio-cultural dimensions',
+'Insufficient funding',
+'Regulatory barriers'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering decision most effectively advances multiple SDGs simultaneously?',
+choices: [
+'Building automated factories',
+'Developing decentralized renewable energy for underserved communities',
+'Expanding luxury infrastructure',
+'Increasing industrial exports'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'When engineers prioritize stakeholder consultation over technical optimization, they implicitly emphasize:',
+choices: [
+'Technical rationality',
+'Democratic legitimacy and social sustainability',
+'Market efficiency',
+'Professional autonomy'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which statement best captures the transformative role of engineering in SDGs?',
+choices: [
+'Engineering mainly improves existing technologies',
+'Engineering reshapes socio-technical systems and development pathways',
+'Engineering operates independently of policy frameworks',
+'Engineering focuses only on infrastructure'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A sustainability assessment that ignores long-term environmental impacts is fundamentally flawed because it neglects:',
+choices: [
+'Market competitiveness',
+'Intergenerational equity',
+'Technical feasibility',
+'Organizational efficiency'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering approach most effectively addresses complex SDG challenges?',
+choices: [
+'Linear problem-solving',
+'Adaptive and iterative design',
+'Standardized technical solutions',
+'Centralized decision-making'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering solution significantly improves efficiency but reduces local employment. From an SDG perspective, the most appropriate evaluation is that the solution:',
+choices: [
+'Is fully sustainable because efficiency is prioritized',
+'Requires assessment of social trade-offs alongside technical gains',
+'Is unacceptable because technology should never replace labor',
+'Is sustainable if it increases national productivity'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A country adopts advanced smart-grid technology but lacks skilled personnel to maintain it. The primary sustainability issue is:',
+choices: [
+'Environmental inefficiency',
+'Capacity and institutional readiness',
+'Insufficient technological innovation',
+'Overregulation'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering decision best demonstrates alignment with the SDG principle of “leaving no one behind”?',
+choices: [
+'Investing in high-end urban infrastructure',
+'Expanding digital services only in profitable regions',
+'Designing affordable technologies for marginalized communities',
+'Prioritizing export-oriented industrial development'
+],
+answer: 2,
+difficulty: 3},
+
+{q: 'An engineering team prioritizes rapid deployment of infrastructure over long-term environmental assessment. This approach is most vulnerable to criticism because it neglects:',
+choices: [
+'Market competitiveness',
+'Intergenerational sustainability',
+'Technical innovation',
+'Organizational efficiency'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A multinational company implements uniform engineering standards across diverse regions, resulting in low adoption in some communities. The most plausible explanation is:',
+choices: [
+'Insufficient technological sophistication',
+'Lack of context-sensitive design',
+'Excessive stakeholder participation',
+'Overinvestment in innovation'
+],
+answer: 1,
+difficulty: 3},
+{q: 'Which scenario best illustrates a systems-level approach to sustainable engineering?',
+choices: [
+'Improving the efficiency of a single manufacturing process',
+'Integrating energy, transport, housing, and digital infrastructure in urban planning',
+'Reducing the cost of raw materials',
+'Automating industrial production lines'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering project achieves environmental targets but exacerbates social inequality. From an SDG perspective, the project can be described as:',
+choices: [
+'Technically successful and socially irrelevant',
+'Partially sustainable with critical social limitations',
+'Fully sustainable due to environmental performance',
+'Unsustainable only if economically inefficient'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering strategy most effectively supports long-term resilience in developing regions?',
+choices: [
+'Importing advanced technologies',
+'Building local technical capacity and knowledge systems',
+'Centralizing infrastructure management',
+'Maximizing short-term efficiency'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A government prioritizes megaprojects to boost economic growth but neglects basic services in rural areas. The most significant SDG-related implication is:',
+choices: [
+'Technological stagnation',
+'Increased spatial and social inequality',
+'Reduced industrial competitiveness',
+'Excessive environmental regulation'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering decision best demonstrates ethical responsibility in sustainable development?',
+choices: [
+'Selecting cheaper materials regardless of environmental impact',
+'Incorporating safety, environmental protection, and community well-being into design',
+'Maximizing productivity at all costs',
+'Prioritizing corporate branding'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering innovation reduces carbon emissions but increases dependence on rare minerals. The most appropriate sustainability assessment should focus on:',
+choices: [
+'Short-term environmental gains only',
+'Trade-offs between environmental benefits and resource security',
+'Market competitiveness',
+'Technological novelty'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which statement best captures the role of engineering in achieving multiple SDGs simultaneously?',
+choices: [
+'Engineering addresses each SDG independently',
+'Engineering creates interconnected solutions with cross-sector impacts',
+'Engineering focuses only on infrastructure development',
+'Engineering replaces social and political institutions'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A project uses cutting-edge technology but fails due to lack of community acceptance. The failure primarily reflects:',
+choices: [
+'Technical limitations',
+'Neglect of social legitimacy',
+'Insufficient funding',
+'Regulatory barriers'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering policy would most effectively promote sustainable innovation?',
+choices: [
+'Encouraging isolated technological breakthroughs',
+'Integrating research, education, industry, and social goals',
+'Limiting interdisciplinary collaboration',
+'Prioritizing short-term economic returns'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering solution optimizes efficiency but increases vulnerability to system failures. This outcome highlights the importance of:',
+choices: [
+'Market competition',
+'Resilience and redundancy in system design',
+'Technical specialization',
+'Regulatory compliance'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which statement best reflects the concept of intergenerational equity in engineering?',
+choices: [
+'Prioritizing current economic growth',
+'Designing systems that meet present needs without compromising future generations',
+'Maximizing technological innovation',
+'Reducing social participation'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'An engineering project is technically sound but financially unsustainable. From an SDG perspective, the project’s main limitation is:',
+choices: [
+'Technical feasibility',
+'Economic viability',
+'Social legitimacy',
+'Environmental performance'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which engineering approach best addresses complex, uncertain sustainability challenges?',
+choices: [
+'Fixed design standards',
+'Adaptive, learning-oriented design processes',
+'Strict central planning',
+'Single-discipline optimization'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'A national development strategy integrates engineering with social policy and environmental governance. This integration most clearly reflects:',
+choices: [
+'Technical determinism',
+'Holistic sustainable development',
+'Industrial specialization',
+'Market liberalization'
+],
+answer: 1,
+difficulty: 3},
+
+{q: 'Which statement most accurately captures the deepest contribution of engineering to sustainable development?',
+choices: [
+'Engineering provides technical tools for economic growth',
+'Engineering shapes socio-technical systems that influence development pathways',
+'Engineering operates independently of societal values',
+'Engineering primarily increases industrial productivity'
+],
+answer: 1,
+difficulty: 3}
+		];
+
+		
+		(function initPools(){
+			advancementPool = advancementQuestions.slice();
+			opportunityPool = opportunityQuestions.slice();
+		})();
+
+	
+		const uploadInputId = 'pdfUploadInput';
+		const uploadBtnId = 'pdfUploadBtn';
+
+
+		// Track per-player difficulty and stats
+		const players = {
+			1: {difficulty: 1, correct:0, total:0, sdgCorrect: 0},
+			2: {difficulty: 1, correct:0, total:0, sdgCorrect: 0},
+			3: {difficulty: 1, correct:0, total:0, sdgCorrect: 0},
+			4: {difficulty: 1, correct:0, total:0, sdgCorrect: 0}
+		};
+
+		
+		const PLAYER_KEY = 'blue_game_players_v1';
+
+		function loadPlayers(){
+			try{
+				const raw = localStorage.getItem(PLAYER_KEY);
+				if (!raw) return {1: {sdg: 0, sp: 0}, 2: {sdg: 0, sp: 0}, 3: {sdg: 0, sp: 0}, 4: {sdg: 0, sp: 0}};
+				const parsed = JSON.parse(raw);
+				const base = {1: {sdg: 0, sp: 0}, 2: {sdg: 0, sp: 0}, 3: {sdg: 0, sp: 0}, 4: {sdg: 0, sp: 0}};
+				for (let i=1;i<=4;i++) if (!parsed[i]) parsed[i]=base[i];
+				return parsed;
+			}catch(e){
+				console.error('Load players error', e);
+				return {1: {sdg: 0, sp: 0}, 2: {sdg: 0, sp: 0}, 3: {sdg: 0, sp: 0}, 4: {sdg: 0, sp: 0}};
+			}
+		}
+
+		function savePlayers(obj){
+			try{ localStorage.setItem(PLAYER_KEY, JSON.stringify(obj)); }
+			catch(e){ console.error('Save players error', e); }
+		}
+
+		function addSDGTokens(player, tokens) {
+			const playersData = loadPlayers();
+			if (!playersData[player]) playersData[player] = {sdg: 0, sp: 0};
+			playersData[player].sdg += tokens;
+			savePlayers(playersData);
+			console.log('Player ' + player + ' received +' + tokens + ' SDG Tokens. Total: ' + playersData[player].sdg);
+		}
+
+		const TIME_LIMIT = 20; 
+		let currentTimer = null;
+		let timeLeft = TIME_LIMIT;
+		let answered = false;
+
+		function openModal() {
+			modal.classList.remove('hidden');
+		}
+
+		function closeModal() {
+			modal.classList.add('hidden');
+		}
+
+		if (advBtn) advBtn.addEventListener('click', () => { sdgIQActive = false; charadesActive = false; currentCategory = 'advancement'; openModal(); });
+		if (sdgBtn) sdgBtn.addEventListener('click', () => { 
+			sdgIQActive = true; 
+			charadesActive = false;
+			sdgIQIndex = 0; 
+			for(let p in players) players[p].sdgCorrect = 0;
+			openModal(); 
+		});
+		if (oppBtn) oppBtn.addEventListener('click', () => { sdgIQActive = false; charadesActive = false; currentCategory = 'opportunity'; openModal(); });
+		if (charadesBtn) charadesBtn.addEventListener('click', () => {
+			sdgIQActive = false;
+			charadesActive = true;
+			openModal();
+		});
+
+		if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+		playerButtons.forEach(pb => {
+			pb.addEventListener('click', (e) => {
+				const player = parseInt(pb.dataset.player, 10);
+				console.log('Player select clicked:', player, 'element:', pb);
+				closeModal();
+				if (sdgIQActive) {
+					attemptSDGIQ(player);
+				} else if (charadesActive) {
+					startCharades(player);
+				} else {
+					startQuestionForPlayer(player, currentCategory);
+				}
+			});
+		});
+
+	
+		function createQuestionModal() {
+			const container = document.createElement('div');
+			container.id = 'questionModal';
+			container.className = 'fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50';
+			container.innerHTML = `
+			<div class="bg-[#012158] border border-blue-300/30 rounded-xl p-6 w-11/12 max-w-lg text-center">
+				<div class="flex justify-between items-center mb-3">
+					<div class="flex items-center gap-3">
+						<h2 id="qPlayer" class="text-lg font-semibold">Question</h2>
+						<span id="qDifficulty" class="text-sm px-2 py-1 rounded-full hidden">&nbsp;</span>
+					</div>
+					<div class="text-sm text-blue-200">Time: <span id="qTimer">${TIME_LIMIT}</span>s</div>
+				</div>
+				<div id="qText" class="mb-4 text-left"></div>
+				<div id="qChoices" class="grid grid-cols-1 gap-3 mb-4"></div>
+				<div id="qResult" class="mb-3"></div>
+				<div class="flex justify-center gap-3">
+					<button id="nextQ" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 hidden">Next Question</button>
+					<button id="closeQ" class="text-sm text-blue-200 hover:underline">Close</button>
+				</div>
+			</div>`;
+			document.body.appendChild(container);
+		}
+
+		if (!document.getElementById('questionModal')) createQuestionModal();
+
+		const qModal = document.getElementById('questionModal');
+		const qTimerEl = () => document.getElementById('qTimer');
+		const qText = () => document.getElementById('qText');
+		const qChoices = () => document.getElementById('qChoices');
+		const qResult = () => document.getElementById('qResult');
+		const nextBtn = () => document.getElementById('nextQ');
+		const closeQBtn = () => document.getElementById('closeQ');
+
+		function pickQuestionForDifficultyFromPool(pool, d) {
+			if (!Array.isArray(pool) || pool.length === 0) return null;
+			const exact = pool.filter(q => q.difficulty === d);
+			if (exact.length > 0) return exact[Math.floor(Math.random()*exact.length)];
+			
+			const sorted = pool.slice().sort((a,b)=>Math.abs(a.difficulty-d)-Math.abs(b.difficulty-d));
+			return sorted[0] || null;
+		}
+
+
+		function createSDGModal() {
+			const container = document.createElement('div');
+			container.id = 'sdgQuestionModal';
+			container.className = 'fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50';
+			container.innerHTML = `
+			<div class="bg-[#012158] border border-blue-300/30 rounded-xl p-6 w-11/12 max-w-lg text-center">
+				<div class="flex justify-between items-center mb-3">
+					<div class="flex items-center gap-3">
+						<h2 id="sdg_qPlayer" class="text-lg font-semibold">SDG IQ Challenge</h2>
+						<span id="sdg_qDifficulty" class="text-sm px-2 py-1 rounded-full hidden">&nbsp;</span>
+					</div>
+				</div>
+				<!-- Live Leaderboard Tally -->
+				<div id="sdg_leaderboard" class="mb-4 p-3 bg-blue-900/50 rounded-lg">
+					<h3 class="text-sm font-semibold mb-2 text-blue-200">Current Standings</h3>
+					<div class="grid grid-cols-4 gap-2 text-center text-sm">
+						<div id="sdg_score_1" class="p-2 rounded bg-white/10">
+							<div class="font-semibold">P1</div>
+							<div class="text-lg">0</div>
+						</div>
+						<div id="sdg_score_2" class="p-2 rounded bg-white/10">
+							<div class="font-semibold">P2</div>
+							<div class="text-lg">0</div>
+						</div>
+						<div id="sdg_score_3" class="p-2 rounded bg-white/10">
+							<div class="font-semibold">P3</div>
+							<div class="text-lg">0</div>
+						</div>
+						<div id="sdg_score_4" class="p-2 rounded bg-white/10">
+							<div class="font-semibold">P4</div>
+							<div class="text-lg">0</div>
+						</div>
+					</div>
+				</div>
+				<div id="sdg_qText" class="mb-4 text-left"></div>
+				<div id="sdg_qChoices" class="grid grid-cols-1 gap-3 mb-4"></div>
+				<div id="sdg_qResult" class="mb-3"></div>
+				<div class="flex justify-center gap-3">
+					<button id="sdg_closeQ" class="text-sm text-blue-200 hover:underline">Close</button>
+				</div>
+			</div>`;
+			document.body.appendChild(container);
+		}
+
+		if (!document.getElementById('sdgQuestionModal')) createSDGModal();
+
+		const sdgModal = document.getElementById('sdgQuestionModal');
+		// SDG modal has no timer
+		const sdg_qText = () => document.getElementById('sdg_qText');
+		const sdg_qChoices = () => document.getElementById('sdg_qChoices');
+		const sdg_qResult = () => document.getElementById('sdg_qResult');
+
+		const sdg_closeQBtn = () => document.getElementById('sdg_closeQ');
+
+		// timer removed for SDG IQ
+		let sdgAnswered = false;
+
+		function attemptSDGIQ(player) {
+			sdgIQActive = true;
+			sdgIQIndex = sdgIQIndex || 0;
+			startSDGIQQuestion(player);
+		}
+
+		function updateSDGLeaderboard() {
+			for (let i = 1; i <= 4; i++) {
+				const el = document.getElementById('sdg_score_' + i);
+				if (el) {
+					const valDiv = el.querySelector('.text-lg');
+					if (valDiv) valDiv.textContent = players[i].sdgCorrect;
+				}
+			}
+		}
+
+		function startSDGIQQuestion(player) {
+			currentSDGPlayer = player;
+			sdgAnswered = false;
+			// open SDG modal (no timer)
+			sdgModal.classList.remove('hidden');
+			sdg_qResult().textContent = '';
+			document.getElementById('sdg_qPlayer').textContent = 'Player ' + player + ' - SDG IQ - Question';
+			
+			updateSDGLeaderboard();
+
+			let rawQuestion = sdgIQQuestions[sdgIQIndex];
+			if (!question) {
+				sdg_qText().textContent = 'No more SDG IQ questions.';
+				sdg_qChoices().innerHTML = '';
+				return;
+			}
+
+			
+			let question = JSON.parse(JSON.stringify(rawQuestion));
+			const combined = question.choices.map((c, i) => ({ text: c, originalIdx: i }));
+			
+			for (let i = combined.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[combined[i], combined[j]] = [combined[j], combined[i]];
+			}
+			question.choices = combined.map(c => c.text);
+			
+			question.answer = combined.findIndex(c => c.originalIdx === rawQuestion.answer);
+
+			
+			const sdgDiffEl = document.getElementById('sdg_qDifficulty');
+			if (sdgDiffEl) {
+				const base = 'text-sm px-2 py-1 rounded-full';
+				if (question.difficulty === 1) {
+					sdgDiffEl.textContent = 'Easy';
+					sdgDiffEl.className = base + ' bg-green-700/20 text-green-200';
+				} else if (question.difficulty === 2) {
+					sdgDiffEl.textContent = 'Medium';
+					sdgDiffEl.className = base + ' bg-yellow-600/20 text-yellow-300';
+				} else if (question.difficulty === 3) {
+					sdgDiffEl.textContent = 'Hard';
+					sdgDiffEl.className = base + ' bg-red-600/20 text-red-300';
+				} else {
+					sdgDiffEl.textContent = '';
+					sdgDiffEl.className = base + ' hidden';
+				}
+			}
+
+			sdg_qText().textContent = question.q;
+			sdg_qChoices().innerHTML = '';
+
+			question.choices.forEach((choice, idx) => {
+				const btn = document.createElement('button');
+				btn.className = 'w-full px-4 py-3 rounded-xl border border-blue-300/40 bg-white/10 text-left';
+				btn.textContent = choice;
+				btn.disabled = false;
+				btn.addEventListener('click', () => {
+					if (sdgAnswered) return;
+					sdgAnswered = true;
+					
+					Array.from(sdg_qChoices().children).forEach(b=> b.disabled = true);
+					btn.classList.add('ring-2','ring-green-400');
+					const correct = idx === question.answer;
+					if (correct) {
+						players[player].correct += 1;
+						players[player].total += 1;
+						players[player].sdgCorrect += 1;
+						updateSDGLeaderboard();
+
+						if (players[player].sdgCorrect >= 5) {
+							sdg_qResult().innerHTML = '<span class="text-green-300 font-bold text-xl">WINNER! Player ' + player + ' Wins!</span>';
+							Array.from(sdg_qChoices().children).forEach((b, i) => {
+								if (i === question.answer) b.classList.add('bg-green-600/30','border-green-400');
+							});
+							setTimeout(() => {
+								sdgModal.classList.add('hidden');
+								alert('Player ' + player + ' Wins the SDG IQ Challenge!');
+							}, 2000);
+							return;
+						}
+
+						sdg_qResult().innerHTML = '<span class="text-green-300 font-semibold">Correct!</span>';
+						Array.from(sdg_qChoices().children).forEach((b, i) => {
+							if (i === question.answer) b.classList.add('bg-green-600/30','border-green-400');
+						});
+						adjustDifficulty(player);
+						
+						sdgIQIndex = (sdgIQIndex || 0) + 1;
+						
+						setTimeout(() => {
+							sdgModal.classList.add('hidden');
+							if (sdgIQIndex < sdgIQQuestions.length) {
+								openModal();
+							}
+						}, 1500);
+					} else {
+					
+						players[player].total += 1;
+						sdg_qResult().innerHTML = '<span class="text-red-300 font-semibold">Wrong answer</span>';
+						adjustDifficulty(player);
+						
+						setTimeout(() => {
+							sdgModal.classList.add('hidden');
+							openModal();
+						}, 1500);
+					}
+				});
+				sdg_qChoices().appendChild(btn);
+			});
+
+		
+		}
+
+		sdg_closeQBtn().addEventListener('click', () => {
+			sdgModal.classList.add('hidden');
+		});
+
+		
+		function createCharadesModal() {
+			const container = document.createElement('div');
+			container.id = 'charadesModal';
+			container.className = 'fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50';
+			container.innerHTML = `
+			<div class="bg-[#012158] border border-green-400/30 rounded-xl p-6 w-11/12 max-w-lg text-center">
+				<div class="flex justify-between items-center mb-6">
+					<h2 id="charadesPlayer" class="text-xl font-semibold text-green-300">Charades</h2>
+					<div class="text-sm text-blue-200">Time: <span id="charadesTimer">60s</span></div>
+				</div>
+				
+				<div class="mb-8">
+					<div class="text-blue-200 text-sm mb-2 uppercase tracking-widest">Act out this word</div>
+					<div id="charadesWord" class="text-4xl font-bold text-white py-8 border-y border-white/10">WORD</div>
+				</div>
+
+				<div class="flex justify-center gap-4">
+					<button id="charadesCorrect" class="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold transition-colors">Correct (+1 Token)</button>
+					<button id="charadesSkip" class="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-blue-200 font-semibold transition-colors">Skip / Fail</button>
+				</div>
+				<div class="mt-4">
+					<button id="charadesClose" class="text-sm text-blue-200 hover:underline">Cancel</button>
+				</div>
+			</div>`;
+			document.body.appendChild(container);
+		}
+		if (!document.getElementById('charadesModal')) createCharadesModal();
+
+		const charadesModal = document.getElementById('charadesModal');
+		let charadesTimer = null;
+
+		function startCharades(player) {
+			charadesModal.classList.remove('hidden');
+			document.getElementById('charadesPlayer').textContent = 'Player ' + player + ' — Charades';
+			
+			const word = charadesWords[Math.floor(Math.random() * charadesWords.length)];
+			document.getElementById('charadesWord').textContent = word;
+
+			const correctBtn = document.getElementById('charadesCorrect');
+			const skipBtn = document.getElementById('charadesSkip');
+			const timerEl = document.getElementById('charadesTimer');
+
+			
+			correctBtn.disabled = false;
+			correctBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+			skipBtn.textContent = "Skip / Fail";
+			timerEl.classList.remove('text-red-400', 'font-bold');
+
+			if (charadesTimer) clearInterval(charadesTimer);
+
+			let timeLeft = 60;
+			timerEl.textContent = timeLeft + 's';
+			charadesTimer = setInterval(() => {
+				timeLeft--;
+				timerEl.textContent = timeLeft + 's';
+				if (timeLeft <= 0) {
+					clearInterval(charadesTimer);
+					timerEl.textContent = "Time's Up!";
+					timerEl.classList.add('text-red-400', 'font-bold');
+					correctBtn.disabled = true;
+					correctBtn.classList.add('opacity-50', 'cursor-not-allowed');
+					skipBtn.textContent = "Next (No Points)";
+				}
+			}, 1000);
+
+			correctBtn.onclick = () => {
+				clearInterval(charadesTimer);
+				addSDGTokens(player, 1);
+				charadesModal.classList.add('hidden');
+				openModal();
+			};
+			skipBtn.onclick = () => {
+				clearInterval(charadesTimer);
+				charadesModal.classList.add('hidden');
+				openModal();
+			};
+			document.getElementById('charadesClose').onclick = () => {
+				clearInterval(charadesTimer);
+				charadesModal.classList.add('hidden');
+			};
+		}
+
+		function startQuestionForPlayer(player, category) {
+				answered = false;
+				
+				if (currentTimer) clearInterval(currentTimer);
+				timeLeft = TIME_LIMIT;
+				qModal.classList.remove('hidden');
+				qTimerEl().textContent = timeLeft;
+				qResult().textContent = '';
+				nextBtn().classList.add('hidden');
+
+				const p = players[player];
+				const pool = category === 'opportunity' ? opportunityPool : advancementPool;
+				
+				
+				if (pool.length === 0) {
+					if (category === 'opportunity') {
+						opportunityPool = opportunityQuestions.slice();
+						pool.push(...opportunityPool);
+					} else {
+						advancementPool = advancementQuestions.slice();
+						pool.push(...advancementPool);
+					}
+				}
+
+				let poolUsed = pool; 
+				let question = pickQuestionForDifficultyFromPool(poolUsed, p.difficulty);
+				
+				if (!question) {
+					const other = category === 'opportunity' ? advancementPool : opportunityPool;
+					const q2 = pickQuestionForDifficultyFromPool(other, p.difficulty);
+					if (q2) {
+						question = q2;
+						poolUsed = other;
+					} else {
+						question = fallbackQuestions[Math.floor(Math.random()*fallbackQuestions.length)];
+						poolUsed = null;
+					}
+				}
+
+				
+				if (poolUsed && Array.isArray(poolUsed)) {
+					const idx = poolUsed.findIndex(q => q.q === question.q && q.answer === question.answer);
+					if (idx > -1) poolUsed.splice(idx, 1);
+				}
+
+				
+				let qDisplay = JSON.parse(JSON.stringify(question));
+				const combined = qDisplay.choices.map((c, i) => ({ text: c, originalIdx: i }));
+				
+				for (let i = combined.length - 1; i > 0; i--) {
+					const j = Math.floor(Math.random() * (i + 1));
+					[combined[i], combined[j]] = [combined[j], combined[i]];
+				}
+				qDisplay.choices = combined.map(c => c.text);
+				qDisplay.answer = combined.findIndex(c => c.originalIdx === question.answer);
+				question = qDisplay; 
+
+				
+				const diffEl = document.getElementById('qDifficulty');
+				if (diffEl) {
+					const base = 'text-sm px-2 py-1 rounded-full';
+					if (question.difficulty === 1) {
+						diffEl.textContent = 'Easy';
+						diffEl.className = base + ' bg-green-700/20 text-green-200';
+					} else if (question.difficulty === 2) {
+						diffEl.textContent = 'Medium';
+						diffEl.className = base + ' bg-yellow-600/20 text-yellow-300';
+					} else if (question.difficulty === 3) {
+						diffEl.textContent = 'Hard';
+						diffEl.className = base + ' bg-red-600/20 text-red-300';
+					} else {
+						diffEl.textContent = '';
+						diffEl.className = base + ' hidden';
+					}
+				}
+
+				console.log('Starting question for player', player, 'category', category, 'question:', question.q);
+			qText().textContent = question.q;
+			qChoices().innerHTML = '';
+
+			question.choices.forEach((choice, idx) => {
+				const btn = document.createElement('button');
+				btn.className = 'w-full px-4 py-3 rounded-xl border border-blue-300/40 bg-white/10 text-left';
+				btn.textContent = choice;
+				btn.disabled = false;
+				btn.addEventListener('click', () => selectAnswer(player, question, idx, btn));
+				qChoices().appendChild(btn);
+			});
+
+			
+			if (nextBtn()) {
+				nextBtn().setAttribute('data-player', player);
+				nextBtn().setAttribute('data-category', currentCategory);
+			}
+
+		
+			currentTimer = setInterval(() => {
+				timeLeft -= 1;
+				qTimerEl().textContent = timeLeft;
+				if (timeLeft <= 0) {
+					clearInterval(currentTimer);
+					if (!answered) handleTimeout(player, question);
+				}
+			}, 1000);
+		}
+
+		function disableChoiceButtons() {
+			Array.from(qChoices().children).forEach(b=> b.disabled = true);
+		}
+
+		function selectAnswer(player, question, idx, btn) {
+			if (answered) return;
+			answered = true;
+			clearInterval(currentTimer);
+			disableChoiceButtons();
+			
+			btn.classList.add('ring-2','ring-green-400');
+			const correct = idx === question.answer;
+			if (correct) {
+				qResult().innerHTML = '<span class="text-green-300 font-semibold">Correct! +2 SDG Tokens</span>';
+				players[player].correct += 1;
+				
+				addSDGTokens(player, 2);
+			} else {
+				qResult().innerHTML = '<span class="text-red-300 font-semibold">Time/Incorrect.</span>';
+			}
+			players[player].total += 1;
+			
+			Array.from(qChoices().children).forEach((b, i) => {
+				if (i === question.answer) b.classList.add('bg-green-600/30','border-green-400');
+			});
+			adjustDifficulty(player);
+			if (nextBtn()) nextBtn().classList.remove('hidden');
+		}
+
+		function handleTimeout(player, question) {
+			answered = true;
+			disableChoiceButtons();
+			qResult().innerHTML = '<span class="text-red-300 font-semibold">Time is up.</span>';
+			players[player].total += 1;
+			Array.from(qChoices().children).forEach((b, i) => {
+				if (i === question.answer) b.classList.add('bg-green-600/30','border-green-400');
+			});
+			adjustDifficulty(player);
+			nextBtn().classList.remove('hidden');
+		}
+
+		function adjustDifficulty(player) {
+			const p = players[player];
+			
+			const accuracy = p.correct / (p.total || 1);
+			if (accuracy >= 0.8 && p.difficulty < 3) p.difficulty += 1;
+			else if (accuracy < 0.5 && p.difficulty > 1) p.difficulty -= 1;
+			// keep difficulty 1..3
+			p.difficulty = Math.max(1, Math.min(3, p.difficulty));
+			console.log('Player', player, 'difficulty now', p.difficulty, 'stats', p);
+		}
+
+		nextBtn().addEventListener('click', () => {
+			
+			qModal.classList.add('hidden');
+			openModal();
+		});
+
+		closeQBtn().addEventListener('click', () => {
+			qModal.classList.add('hidden');
+		});
+
+		
+		const origStartQuestion = startQuestionForPlayer;
+		startQuestionForPlayer = function(player, category) {
+			currentCategory = category || currentCategory;
+			document.getElementById('qPlayer').textContent = 'Player ' + player + ' - ' + (currentCategory === 'opportunity' ? 'Opportunity' : 'Advancement') + ' - Question';
+			origStartQuestion(player, currentCategory);
+		}
+	</script>
+
+</body>
+</html>

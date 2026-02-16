@@ -1,245 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Blueprint</title>
-<style>
-body {
-  font-family: Arial, Spartan;
-  background: linear-gradient(160deg, #012158, #000000);
-  color: #fff;
-  text-align: center;
-  padding: 20px;
-}
-h1, h2 { color: #FFFFFF; }
-.card {
-  background: rgba(255,255,255,0.12);
-  border: 1px solid silver;
-  border-radius: 14px;
-  padding: 20px;
-  margin: 20px auto;
-  max-width: 800px;
-}
-button {
-  background: #FFFFFF12;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin: 5px;
-}
-button:hover {
-  background: silver;
-  color: #0b2b44;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-th, td {
-  border: 1px solid silver;
-  padding: 8px;
-}
-.timer { font-size: 22px; color: #ffd700; }
-.correct { color: #7CFC00; }
-.wrong { color: #ff6961; }
-select, input {
-  padding: 6px;
-  border-radius: 6px;
-  margin: 5px;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Homepage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="min-h-screen flex items-start justify-center pt-14 bg-[#012158] text-white">
 
-<body>
+  <div class="text-center max-w-xl px-6 mx-auto">
 
-<img src="blueprint_logo.png"
-width="300" height:"300"><br>
+  
+    <img src="assets/bp.png" alt="Game Logo" class="mx-auto mb-0 w-60 sm:w-80" />
 
-<!-- LEADERBOARD -->
-<div class="card">
-<h2>Leaderboard</h2>
-<table>
-<tr>
-  <th>Player</th>
-  <th>SDG Tokens</th>
-  <th>Sustainability Points</th>
-</tr>
-<tbody id="leaderboard"></tbody>
-</table>
-</div>
+   
+    <p class="text-sm text-blue-100 -mt-10 mb-10">
+      Is an educational board game inspired by snakes and ladders that focuses on the role of engineers in achieving the 17 Sustainable Development Goals (SDGs). Players move across a development-themed board where progress and setbacks represent real-world engineering successes and challenges. Advancements symbolize innovations and effective engineering solutions. while regressions reflect poor planning, System failures or unsustainable practices. Through this design, the game helps students understand how engineering decisions can either accelerate or hinder sustainable development.
+    </p>
 
-<!-- MANUAL ADJUSTER -->
-<div class="card">
-<h2>Points Tracker</h2>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 justify-items-center">
 
-<select id="adjustPlayer">
-  <option value="0">Player 1</option>
-  <option value="1">Player 2</option>
-  <option value="2">Player 3</option>
-  <option value="3">Player 4</option>
-</select>
+     
+      <a href="questions.html" class="w-full inline-block text-center px-6 py-3 rounded-xl border border-blue-300/40 
+        bg-white/10 backdrop-blur-md 
+        hover:bg-white/20 hover:border-blue-300
+        transition-all duration-300 font-semibold tracking-wide">
+        Questions
+      </a>
 
-<select id="adjustType">
-  <option value="tokens">SDG Tokens</option>
-  <option value="points">Sustainability Points</option>
-</select>
+     
+      <a href="players.html" class="w-full inline-block text-center px-6 py-3 rounded-xl border border-blue-300/40 
+        bg-white/10 backdrop-blur-md 
+        hover:bg-white/20 hover:border-blue-300
+        transition-all duration-300 font-semibold tracking-wide">
+        Player Info
+      </a>
 
-<input type="number" id="adjustAmount" value="1" style="width:70px">
-<button onclick="adjustScore()">Apply</button>
-</div>
+     
+      <a href="shop.php" class="w-full inline-block text-center px-6 py-3 rounded-xl border border-blue-300/40 
+        bg-white/10 backdrop-blur-md 
+        hover:bg-white/20 hover:border-blue-300
+        transition-all duration-300 font-semibold tracking-wide">
+        Player Shop
+      </a>
 
-<!-- QUESTIONS -->
-<div class="card">
-<h2>Select Question</h2>
+     
+      <button id="endGameBtn" class="w-full px-6 py-3 rounded-xl border border-red-400/60 
+        bg-white/10 backdrop-blur-md text-red-300
+        hover:bg-red-500/20 hover:border-red-400
+        transition-all duration-300 font-semibold tracking-wide">
+        End Game
+      </button>
 
-<select id="questionType">
-  <option value="advancement">Advancement (+2 Tokens)</option>
-  <option value="iq">SDG IQ (+1 Point)</option>
-  <option value="opportunity">Opportunity Card (+2 Tokens)</option>
-</select>
+    </div>
+  </div>
 
-<select id="playerSelect">
-  <option value="0">Player 1</option>
-  <option value="1">Player 2</option>
-  <option value="2">Player 3</option>
-  <option value="3">Player 4</option>
-</select>
+ 
+  <div id="winnerModal" class="fixed inset-0 flex items-center justify-center bg-black/80 hidden z-50">
+    <div class="bg-[#012158] border border-yellow-400/50 rounded-xl p-8 w-11/12 max-w-lg text-center shadow-2xl shadow-yellow-400/20">
+      <h2 class="text-3xl font-bold text-yellow-400 mb-2">GAME OVER</h2>
+      <div class="text-blue-200 mb-6">And the winner is...</div>
+      
+      <div id="winnerDisplay" class="text-4xl font-black text-white mb-8 animate-bounce">
+        PLAYER X
+      </div>
 
-<br><br>
-<button onclick="nextQuestion()">Get Question</button>
+      <div id="finalScores" class="space-y-3 mb-8 text-left bg-white/5 p-4 rounded-lg">
 
-<p class="timer" id="timer"></p>
-<h3 id="question"></h3>
-<div id="choices"></div>
-<p id="feedback"></p>
-</div>
+      </div>
 
-<script>
-/* PLAYERS */
-const players = [
-  { name: "Player 1", tokens: 0, points: 0 },
-  { name: "Player 2", tokens: 0, points: 0 },
-  { name: "Player 3", tokens: 0, points: 0 },
-  { name: "Player 4", tokens: 0, points: 0 }
-];
+      <div class="flex justify-center gap-4">
+        <button id="closeWinnerModal" class="px-6 py-2 rounded-lg border border-white/20 hover:bg-white/10 transition text-white">Close</button>
+        <button id="resetGameBtn" class="px-6 py-2 rounded-lg bg-red-500/20 text-red-300 border border-red-500/50 hover:bg-red-500/40 transition">Reset Game</button>
+      </div>
+    </div>
+  </div>
 
-/* QUESTIONS */
-const questions = {
-  advancement: [
-    { q: "How do engineers support clean water access?", c: ["Design water systems", "Sell bottled water", "Ignore sanitation"], a: 0 },
-    { q: "Which SDG focuses on industry and innovation?", c: ["SDG 6", "SDG 9", "SDG 13"], a: 1 }
-  ],
-  iq: [
-    { q: "How many SDGs exist?", c: ["15", "17", "20"], a: 1 }
-  ],
-  opportunity: [
-    { q: "A solar farm reduces emissions. What is the key benefit?", c: ["Cleaner energy", "Higher pollution", "Less electricity"], a: 0 }
-  ]
-};
+  <script>
+    const endGameBtn = document.getElementById('endGameBtn');
+    const winnerModal = document.getElementById('winnerModal');
+    const closeWinnerModal = document.getElementById('closeWinnerModal');
+    const resetGameBtn = document.getElementById('resetGameBtn');
+    const winnerDisplay = document.getElementById('winnerDisplay');
+    const finalScores = document.getElementById('finalScores');
 
-let used = { advancement: [], iq: [], opportunity: [] };
-let currentQ = null;
-let timerInterval;
-let timeLeft = 20;
+    const PLAYER_KEY = 'blue_game_players_v1';
 
-/* RENDER */
-function renderBoard() {
-  const board = document.getElementById("leaderboard");
-  board.innerHTML = "";
-  players.forEach(p => {
-    board.innerHTML += `
-      <tr>
-        <td>${p.name}</td>
-        <td>${p.tokens}</td>
-        <td>${p.points}</td>
-      </tr>`;
-  });
-}
-
-/* MANUAL ADJUST */
-function adjustScore() {
-  const p = document.getElementById("adjustPlayer").value;
-  const type = document.getElementById("adjustType").value;
-  const amount = parseInt(document.getElementById("adjustAmount").value);
-  if (isNaN(amount)) return;
-
-  if (type === "tokens") {
-    players[p].tokens += amount;
-    if (players[p].tokens < 0) players[p].tokens = 0;
-  } else {
-    players[p].points += amount;
-  }
-  renderBoard();
-}
-
-/* TIMER */
-function startTimer() {
-  clearInterval(timerInterval);
-  timeLeft = 20;
-  document.getElementById("timer").innerText = `⏱ ${timeLeft}s`;
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    document.getElementById("timer").innerText = `⏱ ${timeLeft}s`;
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      reveal(false);
+    function loadPlayers(){
+      try{
+        const raw = localStorage.getItem(PLAYER_KEY);
+      
+        if (!raw) return {1: {sdg: 0, sp: 0}, 2: {sdg: 0, sp: 0}, 3: {sdg: 0, sp: 0}, 4: {sdg: 0, sp: 0}};
+        return JSON.parse(raw);
+      }catch(e){
+        return {1: {sdg: 0, sp: 0}, 2: {sdg: 0, sp: 0}, 3: {sdg: 0, sp: 0}, 4: {sdg: 0, sp: 0}};
+      }
     }
-  }, 1000);
-}
 
-/* QUESTIONS */
-function nextQuestion() {
-  document.getElementById("feedback").innerText = "";
-  document.getElementById("choices").innerHTML = "";
+    endGameBtn.addEventListener('click', () => {
+      const players = loadPlayers();
+      const playerList = [];
 
-  const type = document.getElementById("questionType").value;
-  const pool = questions[type];
-  const unused = pool.filter(q => !used[type].includes(q));
+     
+      for(let i=1; i<=4; i++) {
+        const p = players[i] || {sdg:0, sp:0};
+        const total = (p.sdg || 0) + (p.sp || 0);
+        playerList.push({id: i, total: total, sdg: p.sdg||0, sp: p.sp||0});
+      }
 
-  currentQ = unused.length
-    ? unused[Math.floor(Math.random() * unused.length)]
-    : { ...pool[Math.floor(Math.random() * pool.length)],
-        q: "Question: " + pool[0].q };
+    
+      playerList.sort((a,b) => b.total - a.total);
 
-  used[type].push(currentQ);
+    
+      const maxScore = playerList[0].total;
+      const winners = playerList.filter(p => p.total === maxScore);
 
-  document.getElementById("question").innerText = currentQ.q;
-  currentQ.c.forEach((choice, i) => {
-    document.getElementById("choices").innerHTML +=
-      `<button onclick="answer(${i})">${choice}</button>`;
-  });
+      if (winners.length === 1) {
+        winnerDisplay.textContent = `PLAYER ${winners[0].id}`;
+      } else {
+        winnerDisplay.textContent = `TIE: ${winners.map(w => 'P'+w.id).join(' & ')}`;
+      }
 
-  startTimer();
-}
+    
+      let scoreHtml = '';
+      playerList.forEach(p => {
+        scoreHtml += `
+          <div class="flex justify-between items-center border-b border-white/10 pb-2 last:border-0">
+            <span class="font-semibold text-blue-100">Player ${p.id}</span>
+            <div class="text-right">
+              <span class="text-xl font-bold text-white">${p.total}</span> <span class="text-xs text-blue-300">pts</span>
+              <div class="text-[10px] text-blue-400">(${p.sdg} SDG + ${p.sp} SP)</div>
+            </div>
+          </div>`;
+      });
 
-function answer(i) {
-  clearInterval(timerInterval);
-  reveal(i === currentQ.a);
-}
+      finalScores.innerHTML = scoreHtml;
+      winnerModal.classList.remove('hidden');
+    });
 
-function reveal(correct) {
-  const p = document.getElementById("playerSelect").value;
-  const type = document.getElementById("questionType").value;
+    closeWinnerModal.addEventListener('click', () => {
+      winnerModal.classList.add('hidden');
+    });
 
-  if (correct) {
-    if (type === "iq") players[p].points += 1;
-    else players[p].tokens += 2;
-  }
-
-  if (players[p].tokens < 0) players[p].tokens = 0;
-
-  document.getElementById("feedback").innerText =
-    (correct ? "✅ Correct! Please get an Innovation Card " : "❌ Incorrect. Please get a Crisis Card. ") +
-    "Correct answer: " + currentQ.c[currentQ.a];
-
-  renderBoard();
-}
-
-/* INIT */
-renderBoard();
-</script>
-
+    resetGameBtn.addEventListener('click', () => {
+      if(confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+        localStorage.removeItem(PLAYER_KEY);
+        location.reload();
+      }
+    });
+  </script>
 </body>
 </html>

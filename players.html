@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Players</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-start justify-center pt-14 bg-[#012158] text-white">
+
+  <div class="text-center max-w-xl px-6 mx-auto">
+
+ 
+    <img src="assets/bp.png" alt="Game Logo" class="mx-auto mb-0 w-60 sm:w-80" />
+
+    
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 justify-items-center mt-2">
+
+      <button data-player="1" class="player-btn w-full px-8 py-4 sm:px-10 sm:py-5 rounded-xl border border-blue-300/40 
+        bg-white/10 backdrop-blur-md text-lg sm:text-xl
+        hover:bg-white/20 hover:border-blue-300
+        transition-all duration-300 font-semibold tracking-wide">
+        Player 1
+      </button>
+
+      <button data-player="2" class="player-btn w-full px-8 py-4 sm:px-10 sm:py-5 rounded-xl border border-blue-300/40 
+        bg-white/10 backdrop-blur-md text-lg sm:text-xl
+        hover:bg-white/20 hover:border-blue-300
+        transition-all duration-300 font-semibold tracking-wide">
+        Player 2
+      </button>
+
+      <button data-player="3" class="player-btn w-full px-8 py-4 sm:px-10 sm:py-5 rounded-xl border border-blue-300/40 
+        bg-white/10 backdrop-blur-md text-lg sm:text-xl
+        hover:bg-white/20 hover:border-blue-300
+        transition-all duration-300 font-semibold tracking-wide">
+        Player 3
+      </button>
+
+      <button data-player="4" class="player-btn w-full px-8 py-4 sm:px-10 sm:py-5 rounded-xl border border-blue-300/40 
+        bg-white/10 backdrop-blur-md text-lg sm:text-xl
+        hover:bg-white/20 hover:border-blue-300
+        transition-all duration-300 font-semibold tracking-wide">
+        Player 4
+      </button>
+
+    </div>
+
+    
+    <div class="mt-4">
+      <a href="index.html" class="text-sm text-blue-200 hover:underline">Return to homepage</a>
+    </div>
+
+  </div>
+
+</body>
+</html>
+
+
+<div id="playerModal" class="fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50">
+  <div class="bg-[#012158] border border-blue-300/30 rounded-xl p-6 w-11/12 max-w-md text-left">
+    <div class="flex justify-between items-center mb-4">
+      <h2 id="modalTitle" class="text-xl font-semibold text-white">Player</h2>
+      <button id="closePlayerModal" class="text-sm text-blue-200 hover:underline">Close</button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div>
+        <div class="text-sm text-blue-200">SDG Tokens</div>
+        <div id="sdgValue" class="mt-2 px-4 py-2 rounded border border-blue-300/30">0</div>
+      </div>
+
+      <div>
+        <div class="text-sm text-blue-200">Sustainability Points (SP)</div>
+        <input type="number" id="spValue" class="mt-2 px-4 py-2 rounded border border-blue-300/30 bg-white/5 w-full text-white focus:outline-none focus:border-blue-300" value="0" />
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3">
+      
+    </div>
+  </div>
+</div>
+
+<script>
+  
+  const PLAYER_KEY = 'blue_game_players_v1';
+
+  
+  function defaultPlayers(){
+    return {
+      1: {sdg: 0, sp: 0},
+      2: {sdg: 0, sp: 0},
+      3: {sdg: 0, sp: 0},
+      4: {sdg: 0, sp: 0}
+    };
+  }
+
+  function loadPlayers(){
+    try{
+      const raw = localStorage.getItem(PLAYER_KEY);
+      if (!raw) return defaultPlayers();
+      const parsed = JSON.parse(raw);
+      const base = defaultPlayers();
+      for (let i=1;i<=4;i++) if (!parsed[i]) parsed[i]=base[i];
+      return parsed;
+    }catch(e){
+      console.error('Load players error', e);
+      return defaultPlayers();
+    }
+  }
+
+  function savePlayers(obj){
+    try{ localStorage.setItem(PLAYER_KEY, JSON.stringify(obj)); }
+    catch(e){ console.error('Save players error', e); }
+  }
+
+  let playersData = loadPlayers();
+
+  
+  const playerModal = document.getElementById('playerModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const closePlayerModal = document.getElementById('closePlayerModal');
+  const sdgValue = document.getElementById('sdgValue');
+  const spValue = document.getElementById('spValue');
+
+  let currentPlayer = 1;
+
+ 
+  function openPlayerModal(player){
+    playersData = loadPlayers(); // Refresh data to ensure we have latest edits
+    currentPlayer = player;
+    modalTitle.textContent = 'Player ' + player + ' — Info';
+    const p = playersData[player] || {sdg:0, sp:0};
+    sdgValue.textContent = p.sdg;
+    spValue.value = p.sp;
+    playerModal.classList.remove('hidden');
+  }
+
+  function closeModal(){ playerModal.classList.add('hidden'); }
+
+ 
+  document.querySelectorAll('.player-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const p = parseInt(btn.getAttribute('data-player')) || 1;
+      openPlayerModal(p);
+    });
+  });
+
+  closePlayerModal.addEventListener('click', () => {
+    closeModal();
+  });
+
+  // Save SP changes immediately
+  spValue.addEventListener('input', () => {
+    const val = parseInt(spValue.value) || 0;
+    if(!playersData[currentPlayer]) playersData[currentPlayer] = {sdg:0, sp:0};
+    playersData[currentPlayer].sp = val;
+    savePlayers(playersData);
+  });
+</script>
+</html>
